@@ -12,7 +12,8 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 		this.connected = false;
 		this.spark = null;
 		this.allCount = 0;
-		this.publicRooms = [];
+		this.generalRooms = [];
+		this.myRooms = [];
 		this.forceSingleRoomMode = options.forceSingleRoomMode;
 
 		this.primus = null;
@@ -368,8 +369,9 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 				$rootScope.$emit( 'Chat.friendsListUpdated', {} );
 			}
 		}
-		else if ( msg.event === 'public-rooms' ) {
-			this.publicRooms = msg.data.rooms;
+		else if ( msg.event === 'rooms' ) {
+			this.generalRooms = msg.data.generalRooms;
+			this.myRooms = msg.data.myRooms;
 		}
 		else if ( msg.event === 'notifications' ) {
 			this.notifications = msg.data.notifications;
