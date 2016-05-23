@@ -1,16 +1,16 @@
 <!-- User -->
 <strong ng-if="notification.is_user_based">
-	<span ng-if="notification.subject_id">
-		{{ notification.subject_model.display_name }}
+	<span ng-if="notification.from_resource_id">
+		{{ notification.from_resource_model.display_name }}
 	</span>
-	<span ng-if="!notification.subject_id" translate>
+	<span ng-if="!notification.from_resource_id" translate>
 		Someone
 	</span>
 </strong>
 
 <!-- Game -->
 <strong ng-if="notification.is_game_based">
-	{{ notification.object_model.title }}
+	{{ notification.to_resource_model.title }}
 </strong>
 
 <!-- Actions -->

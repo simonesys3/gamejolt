@@ -32,30 +32,30 @@
 
 				<img ng-if="notification.is_user_based && !Screen.isXs"
 					class="timeline-list-item-avatar"
-					ng-src="{{ notification.subject_model.img_avatar }}"
+					ng-src="{{ notification.from_resource_model.img_avatar }}"
 					alt=""
 					>
 
 				<div ng-if="notification.is_game_based && !Screen.isXs"
 					class="timeline-list-item-thumb"
-					ng-style="{ 'background-image': 'url( \'' + notification.object_model.img_thumbnail + '\' )' }"
+					ng-style="{ 'background-image': 'url( \'' + notification.to_resource_model.img_thumbnail + '\' )' }"
 					>
 				</div>
 
 				<gj-fade-collapse fade-collapse-height="80">
 					<div class="timeline-list-item-content" ng-switch="::notification.type">
-						<div ng-switch-when="comment-add" ng-bind-html="::notification.action_model.comment_compiled"></div>
-						<div ng-switch-when="comment-add-object-owner" ng-bind-html="::notification.action_model.comment_compiled"></div>
+						<div ng-switch-when="comment-add" ng-bind-html="::notification.action_resource_model.comment_compiled"></div>
+						<div ng-switch-when="comment-add-object-owner" ng-bind-html="::notification.action_resource_model.comment_compiled"></div>
 						<div ng-switch-when="game-rating-add"
-							ng-attr-title="{{ 'notifications.rating_details_title' | translate:{ rating: notification.action_model.rating } }}"
+							ng-attr-title="{{ 'notifications.rating_details_title' | translate:{ rating: notification.action_resource_model.rating } }}"
 							translate
-							translate-scope="::{ rating: notification.action_model.rating }"
+							translate-scope="::{ rating: notification.action_resource_model.rating }"
 							>
 							notifications.rating_details_html
 						</div>
 						<div ng-switch-when="game-news-add">
-							<p><strong>{{ ::notification.action_model.title }}</strong></p>
-							{{ ::notification.action_model.excerpt }}
+							<p><strong>{{ ::notification.action_resource_model.title }}</strong></p>
+							{{ ::notification.action_resource_model.excerpt }}
 						</div>
 					</div>
 				</gj-fade-collapse>

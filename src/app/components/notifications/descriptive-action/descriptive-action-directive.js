@@ -35,7 +35,7 @@ angular.module( 'App.Notifications.DescriptiveAction' ).directive( 'gjNotificati
 				}
 
 				translationValues = {
-					rating: scope.notification.action_model.rating,
+					rating: scope.notification.action_resource_model.rating,
 				};
 			}
 			else if ( scope.notification.type == Notification.TYPE_GAME_NEWS_ADD ) {
@@ -44,18 +44,18 @@ angular.module( 'App.Notifications.DescriptiveAction' ).directive( 'gjNotificati
 				}
 
 				translationValues = {
-					title: scope.notification.action_model.title,
+					title: scope.notification.action_resource_model.title,
 				};
 			}
 			else if ( scope.notification.type == Notification.TYPE_SELLABLE_SELL ) {
 				translationValues = {
-					object: scope.notification.object_model.title,
-					amount: currencyFilter( scope.notification.action_model.amount / 100, '$' ),
+					object: scope.notification.to_resource_model.title,
+					amount: currencyFilter( scope.notification.action_resource_model.amount / 100, '$' ),
 				};
 			}
 			else {
 				translationValues = {
-					object: scope.notification.object_model.title,
+					object: scope.notification.to_resource_model.title,
 				};
 			}
 
