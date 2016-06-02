@@ -1,0 +1,22 @@
+<form gj-form="formModel" name="addLinkedKeys">
+
+	<form-group name="keys"
+		label="Keys"
+		>
+		<p class="help-block" translate>
+			Paste one key per line, or separate them by commas.
+		</p>
+		<textarea form-control rows="10"></textarea>
+		<control-errors></control-errors>
+	</form-group>
+
+	<button gj-form-submit-button
+		class="btn btn-success-outline"
+		ng-disabled="!addLinkedKeys.$valid"
+		ng-click="onSubmit()"
+		>
+		<span class="jolticon jolticon-add"></span>
+		<span translate>Add</span>
+	</button>
+
+</form>

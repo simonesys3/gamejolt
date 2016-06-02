@@ -1,0 +1,60 @@
+<form gj-form="formModel" name="linkedKeyPoolForm">
+
+	<form-group name="provider"
+		label="Key Provider"
+		ng-if="method == 'add'"
+		>
+		<div class="radio">
+			<label>
+				<input form-control="radio" ng-value="LinkedKey_Pool.PROVIDER_STEAM">
+				Steam &mdash;
+				<span class="help-inline">You have a game on Steam - awesome! Welcome to Game Jolt.</span>
+			</label>
+		</div>
+		<div class="radio">
+			<label>
+				<input form-control="radio" ng-value="LinkedKey_Pool.PROVIDER_ITCH">
+				Itch.io &mdash;
+				<span class="help-inline">Itch.io is a cool site too. If you're an indie you should sell everywhere you can!</span>
+			</label>
+		</div>
+		<control-errors></control-errors>
+	</form-group>
+
+	<form-group name="name"
+		label="Label"
+		ng-if="!!formModel.provider"
+		optional="true"
+		>
+		<p class="help-block" translate>
+			We need a way to label the pools. Maybe one has Windows builds and another Mac builds or maybe one gives Early Preview access.
+		</p>
+		<input
+			form-control
+			ng-maxlength="150"
+			>
+		<control-errors></control-errors>
+	</form-group>
+
+	<form-group name="keys"
+		label="Keys"
+		ng-if="!!formModel.provider && method == 'add'"
+		>
+		<p class="help-block" translate>
+			Paste one {{ formModel.provider | uppercase }} key per line, or separate them by commas.
+		</p>
+		<textarea form-control rows="10" ng-maxlength="750"></textarea>
+		<control-errors></control-errors>
+	</form-group>
+
+	<button gj-form-submit-button
+		class="btn btn-success-outline"
+		ng-if="!!formModel.provider && !linkedKeyPoolForm.$pristine"
+		ng-disabled="!linkedKeyPoolForm.$valid"
+		ng-click="onSubmit()"
+		>
+		<span class="jolticon" ng-class="method == 'add' ? 'jolticon-add' : 'jolticon-edit'"></span>
+		<span translate>Save Linked Key Pool</span>
+	</button>
+
+</form>

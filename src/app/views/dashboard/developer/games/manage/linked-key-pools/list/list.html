@@ -1,0 +1,73 @@
+<h2 class="section-header" translate>
+	Linked Key Pools
+</h2>
+
+<div class="row">
+	<div class="col-md-4 col-md-push-7">
+		<div class="page-help">
+			<p>Organise your linked keys.</p>
+		</div>
+	</div>
+
+	<div class="col-md-7 col-md-pull-4">
+
+		<gj-editable-accordion is-adding="listCtrl.isAdding">
+
+			<gj-editable-accordion-item ng-repeat="pool in listCtrl.linkedKeyPools track by pool.id">
+				<gj-editable-accordion-item-heading>
+
+
+
+					<h5 class="editable-accordion-item-heading-title">
+						<a class="link-unstyled" ui-sref="dashboard.developer.games.manage.linked-key-pools.edit( { linkedKeyPoolId: pool.id } )">
+							<strong>{{ pool.getName() }}</strong>
+						</a>
+					</h5>
+
+					<div>
+						<span class="tag tag-blue">
+							<span ng-if="pool.provider == LinkedKey_Pool.PROVIDER_STEAM" translate>
+								Steam
+							</span>
+							<span ng-if="pool.type == LinkedKey_Pool.PROVIDER_ITCH" translate>
+								Itch
+							</span>
+						</span>
+					</div>
+					<br>
+
+					<div class="linked-key-pools-progress hidden-xs">
+						<div>
+							<strong>Keys Remaining</strong>
+							{{ pool.available_count || 0 | number }} / {{ pool.total_count || 0 | number }}
+							({{ pool.available_count / pool.total_count * 100 | number:2 }}%)
+						</div>
+						<div class="progress progress-thin">
+							<div class="progress-bar" ng-style="{ width: (pool.available_count / pool.total_count * 100) + '%' }"></div>
+						</div>
+					</div>
+
+					<div>
+						<a class="btn btn-outline btn-sm" ui-sref="dashboard.developer.games.manage.linked-key-pools.edit( { linkedKeyPoolId: pool.id } )">
+							<span class="jolticon jolticon-cog"></span>
+							Edit
+						</a>
+					</div>
+
+				</gj-editable-accordion-item-heading>
+			</gj-editable-accordion-item>
+
+			<gj-editable-accordion-add add-label="{{ 'Add Linked Key Pool' | translate }}">
+
+				<gj-form-dashboard-game-linked-key-pool
+					game="manageCtrl.game"
+					gj-form-submit-handler="listCtrl.onLinkedKeyPoolAdded( formModel )"
+					>
+				</gj-form-dashboard-game-linked-key-pool>
+
+			</gj-editable-accordion-add>
+
+		</gj-editable-accordion>
+
+	</div>
+</div>
