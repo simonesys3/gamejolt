@@ -1,0 +1,85 @@
+<section class="section">
+	<div class="container">
+
+		<div class="row" ng-if="!listCtrl.cards.length">
+			<div class="col-sm-10 col-md-8 col-lg-6 col-centered">
+				<div class="alert alert-info" translate>
+					You haven't saved any cards to the site yet. Once you do make some purchases and save some cards, you'll be able to see all of your cards here.
+				</div>
+			</div>
+		</div>
+
+		<table class="table" ng-if="listCtrl.cards.length">
+			<thead>
+				<tr>
+					<th translate>Card</th>
+					<th translate>Expiry Date</th>
+					<th translate>Latest Order #</th>
+					<th translate>Billing Address</th>
+					<th translate></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="card in listCtrl.cards track by card.id">
+					<td>
+						<!-- Do we want a filter that shows only orders this card has made or such? -->
+						<strong ng-show="false">
+							<a ui-sref="dashboard.main.saved-cards.view( { id: card.id } )">
+								{{ ::card.last4 }} ({{ ::card.brand }})
+							</a>
+						</strong>
+						<span ng-show="true">
+							{{ ::card.last4 }} ({{ ::card.brand }})
+						</span>
+					</td>
+					<td>
+						{{ ::card.exp_month }} / {{ ::card.exp_year }}
+					</td>
+					<td>
+						<strong ng-if="card.latest_payment">
+							<a ui-sref="dashboard.main.purchases.view( { id: card.latest_payment.order_id } )">
+								{{ ::card.latest_payment.order_id }}
+							</a>
+						</strong>
+						<span ng-if="!card.latest_payment">N/A</span>
+					</td>
+					<td>
+
+						<div ng-if="card.user_address.fullname">
+							<strong>{{ card.user_address.fullname }}</strong>
+						</div>
+
+						<div ng-if="card.user_address.street1">
+							{{ card.user_address.street1 }}
+						</div>
+
+						<div ng-if="card.user_address.street2">
+							{{ card.user_address.street2 }}
+						</div>
+
+						<div>
+							<span ng-if="card.user_address.city">
+								{{ card.user_address.city }}
+							</span>
+							<span ng-if="card.user_address.region">
+								{{ ::Geo.getRegionName( card.user_address.country, card.user_address.region ) || card.user_address.region }}
+							</span>
+							<span ng-if="card.user_address.postcode">
+								{{ card.user_address.postcode }}
+							</span>
+						</div>
+
+						<div ng-if="card.user_address.country">
+							{{ ::Geo.getCountryName( card.user_address.country ) }}
+						</div>
+
+					</td>
+					<td class="text-right">
+						<a ng-click="listCtrl.removeCard(card)"><span class="jolticon jolticon-remove" tooltip="Remove?"></span></a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+</section>

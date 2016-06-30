@@ -136,6 +136,7 @@ const AppModule = angular.module( 'App', [
 	'gj.User.LinkedAccounts',
 	'gj.User.Friendship',
 	'gj.User.Message',
+	'gj.User.SavedCard',
 	'gj.Notification',
 	CommentModule,
 	CommentVoteModule,
