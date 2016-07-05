@@ -11,7 +11,13 @@
     "lodash": "registry:dt/lodash#3.10.0+20160330154726",
     "moment": "registry:dt/moment#2.8.0+20160316155526",
     "moment-node": "registry:dt/moment-node#2.11.1+20160511043338",
+    "node": "registry:dt/node#6.0.0+20160621231320",
+    "nw.js": "registry:dt/nw.js#0.13.0+20160619023536",
     "oclazyload": "registry:dt/oclazyload#0.0.0+20160317120654",
-    "stripe": "registry:dt/stripe#0.0.0+20160417145414"
+    "stripe": "registry:dt/stripe#0.0.0+20160417145414",
+    "ua-parser-js": "registry:dt/ua-parser-js#0.7.10+20160626105336"
+  },
+  "dependencies": {
+    "minimist": "registry:npm/minimist#1.0.0+20160229232932"
   }
 }

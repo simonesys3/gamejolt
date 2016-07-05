@@ -1,9 +1,14 @@
+import AutostartModule from './autostart/autostart';
+import ClientControlModule from './control/control';
+import ClientCliModule from './cli/cli';
+
 angular.module( 'App.Client', [
 	'gj.Connection.StatePermissions',
 
-	'App.Client.Control',
+	ClientControlModule,
+	ClientCliModule,
 	'App.Client.Shortcut',
-	'App.Client.Autostart',
+	AutostartModule,
 	'App.Client.Intro',
 	'App.Client.User',
 	'App.Client.LocalDb',

@@ -28,7 +28,6 @@ var config = {
 				'favico.js',
 				'angular-inview',
 				'angular-elastic',
-				'ua-parser-js',
 			]
 		},
 		'vendor-checkout.js': {
@@ -109,6 +108,7 @@ var config = {
 
 		// For client.
 		'client.js': {
+			main: '/components/client/client.ts',
 			bower: [
 				'dexie',
 			],

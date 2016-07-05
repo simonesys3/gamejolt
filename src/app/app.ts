@@ -6,6 +6,7 @@ import MetaModule from './../lib/gj-lib-client/components/meta/meta';
 import RulerModule from './../lib/gj-lib-client/components/ruler/ruler';
 import ScreenModule from './../lib/gj-lib-client/components/screen/screen';
 import LoadModule from './../lib/gj-lib-client/components/load/load';
+import DeviceModule from './../lib/gj-lib-client/components/device/device';
 import HistoryTickModule from './../lib/gj-lib-client/components/history-tick/history-tick';
 import ModalConfirmModule from './../lib/gj-lib-client/components/modal/confirm/confirm';
 
@@ -50,6 +51,9 @@ import ViewsModule from './views/views';
 const AppModule = angular.module( 'App', [
 	// Set the event tracking up first.
 	'gj.ErrorTracking',
+
+	// Client.
+	/* inject client:modules */
 
 	// Libs.
 	'ngSanitize',
@@ -98,7 +102,7 @@ const AppModule = angular.module( 'App', [
 	'gj.Typography',
 	'gj.ExpandWhen',
 	'gj.UiTree.Placeholder',
-	'gj.Device',
+	DeviceModule,
 	'gj.Location',
 	'gj.Connection',
 	'gj.Permalink',
@@ -329,9 +333,6 @@ const AppModule = angular.module( 'App', [
 
 	// Views.
 	ViewsModule,
-
-	// Client.
-	/* inject client:modules */
 ] )
 .config( function( $locationProvider, $uiViewScrollProvider, $compileProvider, $httpProvider, EnvironmentProvider, $ocLazyLoadProvider, $sceDelegateProvider, amTimeAgoConfig, TranslateProvider )
 {

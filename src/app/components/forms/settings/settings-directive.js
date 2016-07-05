@@ -6,7 +6,7 @@ angular.module( 'App.Forms' ).directive( 'gjFormSettings', function( $injector, 
 
 	if ( Environment.isClient ) {
 		var Client_Installer = $injector.get( 'Client_Installer' );
-		var Client_Autostart = $injector.get( 'Client_Autostart' );
+		var ClientAutostart = $injector.get( 'ClientAutostart' );
 	}
 
 	form.onInit = function( scope )
@@ -19,7 +19,7 @@ angular.module( 'App.Forms' ).directive( 'gjFormSettings', function( $injector, 
 		formModel.restricted_browsing = Settings.get( 'restricted-browsing' );
 
 		if ( Environment.isClient ) {
-			scope.Client_Autostart = Client_Autostart;
+			scope.ClientAutostart = ClientAutostart;
 
 			formModel.game_install_dir = Settings.get( 'game-install-dir' );
 			formModel.queue_when_playing = Settings.get( 'queue-when-playing' );
@@ -30,7 +30,7 @@ angular.module( 'App.Forms' ).directive( 'gjFormSettings', function( $injector, 
 			formModel.max_extract_count = Settings.get( 'max-extract-count' );
 			formModel.limit_extractions = (formModel.max_extract_count != -1);
 
-			if ( Client_Autostart.canAutostart() ) {
+			if ( ClientAutostart.canAutostart() ) {
 				formModel.autostart_client = Settings.get( 'autostart-client' );
 			}
 
@@ -70,14 +70,14 @@ angular.module( 'App.Forms' ).directive( 'gjFormSettings', function( $injector, 
 				Settings.set( 'max-extract-count', formModel.max_extract_count );
 				Settings.set( 'queue-when-playing', formModel.queue_when_playing );
 
-				if ( Client_Autostart.canAutostart() ) {
+				if ( ClientAutostart.canAutostart() ) {
 					Settings.set( 'autostart-client', formModel.autostart_client );
 
 					if ( formModel.autostart_client ) {
-						Client_Autostart.set();
+						ClientAutostart.set();
 					}
 					else {
-						Client_Autostart.clear();
+						ClientAutostart.clear();
 					}
 				}
 

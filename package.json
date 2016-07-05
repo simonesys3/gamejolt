@@ -45,7 +45,6 @@
     "gulp-wrapper": "^0.1.5",
     "gulp-zip": "2.0.2",
     "merge-stream": "^1.0.0",
-    "minimist": "~0.2.0",
     "mv": "^2.1.1",
     "ng-metadata": "gamejolt/ng-metadata#6cbaa679d2aa0bcfaa7c7b03cfe1991d279ac7b1",
     "nw-builder": "gamejolt/nw-builder#skip-merge-app",
@@ -62,7 +61,8 @@
     "streamqueue": "~0.1.1",
     "stylus": "0.53.0",
     "through2": "~0.5.1",
-    "typescript": "^1.9.0-dev.20160611-1.0"
+    "typescript": "^1.9.0-dev.20160611-1.0",
+    "ua-parser-js": "^0.7.10"
   },
   "optionalDependencies": {
     "appdmg": "^0.3.5"
@@ -70,6 +70,7 @@
   "dependencies": {
     "client-voodoo": "1.0.4",
     "lodash": "3.9.3",
+    "minimist": "~0.2.0",
     "nwjs-snappy-updater": "1.0.0"
   }
 }
