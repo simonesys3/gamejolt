@@ -377,7 +377,7 @@ const AppModule = angular.module( 'App', [
 	EnvironmentProvider.isWttf = true;
 
 	// Desktop client.
-	if ( EnvironmentProvider.isClient ) {
+	if ( true ) {
 
 		// Some libraries attach onto global instead of window for node-webkit
 		// because they think they're in nodejs context. Just pull back over to window.
@@ -501,7 +501,10 @@ angular.module( AppModule )
 .controller( 'AppCtrl', AppCtrl )
 .service( ...provide( 'App', { useClass: App } ) );
 
-setTimeout( function()
+document.addEventListener( 'deviceready', function()
 {
 	bootstrap( AppModule );
-}, 0 );
+}, false );
+// setTimeout( function()
+// {
+// }, 0 );
