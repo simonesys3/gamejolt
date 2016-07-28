@@ -133,7 +133,11 @@
 			-->
 			<div class="chat-window-output chat-window-output-group scrollable overlay-scrollbar overlay-scrollbar-light"
 				gj-chat-auto-scroll="ctrl.messages[ ctrl.messages.length - 1 ]"
-				gj-scrollback>
+				gj-scrollback gj-scrollback-at-top="ctrl.loadScrollback()">
+
+				<div ng-if="ctrl.loadingScrollback">
+					<gj-loading class="loading-centered"></gj-loading>
+				</div>
 
 				<div class="chat-window-message anim-fade-in no-animate-leave"
 					ng-repeat="msg in ctrl.messages track by msg.id"

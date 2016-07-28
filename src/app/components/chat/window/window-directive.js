@@ -20,6 +20,7 @@ angular.module( 'App.Chat' ).directive( 'gjChatWindow', function()
 			$scope.Chat_Room = Chat_Room;
 
 			this.isShowingUsers = false;
+			this.loadingScrollback = false;
 
 			this.minimize = function()
 			{
@@ -93,6 +94,12 @@ angular.module( 'App.Chat' ).directive( 'gjChatWindow', function()
 					return true;
 				}
 				return false;
+			};
+
+			this.loadScrollback = function()
+			{
+				console.log('scrolled to top');
+				this.loadingScrollback = true;
 			};
 		}
 	};
