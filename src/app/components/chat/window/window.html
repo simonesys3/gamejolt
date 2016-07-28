@@ -132,7 +132,8 @@
 				This way we update any time messages changes.
 			-->
 			<div class="chat-window-output chat-window-output-group scrollable overlay-scrollbar overlay-scrollbar-light"
-				gj-chat-auto-scroll="ctrl.messages[ ctrl.messages.length - 1 ]">
+				gj-chat-auto-scroll="ctrl.messages[ ctrl.messages.length - 1 ]"
+				gj-scrollback>
 
 				<div class="chat-window-message anim-fade-in no-animate-leave"
 					ng-repeat="msg in ctrl.messages track by msg.id"

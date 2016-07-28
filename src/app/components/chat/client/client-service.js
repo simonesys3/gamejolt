@@ -88,11 +88,12 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 				// _this._reset();
 
 				// We set the cookie. This will kick the server to get the information we need for chatting as this user.
-				_getCookie( 'frontend' )
-					.then( function( cookie )
-					{
-						_this.primus.write( { event: 'set-cookie', cookie: cookie } );
-					} );
+				// _getCookie( 'frontend' )
+				// 	.then( function( cookie )
+				// 	{
+				// 		_this.primus.write( { event: 'set-cookie', cookie: cookie } );
+				// 	} );
+				_this.primus.write( {event: 'set-cookie', cookie: 'guj17ae3qkqqajrk5tfrsq0640'});
 			} );
 
 			// On any message...
