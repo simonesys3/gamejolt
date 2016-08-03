@@ -15,7 +15,7 @@
 
 		<!-- Room Users -->
 		<div class="fill-darkest chat-window-users scrollable overlay-scrollbar anim-fade-enter-enlarge anim-fade-leave-shrink"
-			ng-if="ctrl.room.type != Chat_Room.TYPE_PM && ctrl.isShowingUsers"
+			ng-if="ctrl.room.type != Chat_Room.TYPE_PM && ctrl.ingUsers"
 			>
 
 			<div ng-if="Screen.isXs">
@@ -131,16 +131,16 @@
 				Auto scrolling happens whenever the watched variabe changes.
 				This way we update any time messages changes.
 			-->
-			<div class="chat-window-output chat-window-output-group scrollable overlay-scrollbar overlay-scrollbar-light"
-				gj-chat-auto-scroll="ctrl.messages[ ctrl.messages.length - 1 ]"
-				gj-scrollback gj-scrollback-at-top="ctrl.loadScrollback()">
+			<div id="chat-window-output"
+				class="chat-window-output chat-window-output-group scrollable overlay-scrollbar overlay-scrollbar-light"
+				gj-chat-auto-scroll="ctrl.messages[ ctrl.messages.length - 1 ]">
 
 				<div ng-if="ctrl.loadingScrollback">
 					<gj-loading class="loading-centered"></gj-loading>
 				</div>
 
 				<div class="chat-window-message anim-fade-in no-animate-leave"
-					ng-repeat="msg in ctrl.messages track by msg.id"
+					ng-repeat="msg in ctrl.messages track by ( '' + msg.id + msg.combine )"
 					ng-class="::{
 						'chat-msg-type-normal': msg.type == ChatConfig.MSG_NORMAL,
 						'chat-msg-type-system': msg.type == ChatConfig.MSG_SYSTEM,
@@ -199,6 +199,10 @@
 			</div>
 
 			<div class="chat-window-send-container" ng-if="client.currentUser">
+
+				<div class="chat-window-jump-to-present" ng-if="ctrl.showJumpToPresent" ng-click="ctrl.jumpToPresent()">
+					You are viewing older messages. Click to jump to present.
+				</div>
 
 				<!--
 					The ng-repeat allows us to recompile the send component when switching rooms.

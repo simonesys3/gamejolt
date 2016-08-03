@@ -93,7 +93,6 @@ const AppModule = angular.module( 'App', [
 	'gj.Partial',
 	'gj.Backdrop',
 	'gj.Tooltip',
-	'gj.Scrollback',
 	'gj.Popover',
 	'gj.ToggleSwitch',
 	'gj.Growls',

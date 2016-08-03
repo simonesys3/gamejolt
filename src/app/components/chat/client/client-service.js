@@ -102,7 +102,7 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 				// We want to make sure any changes in these function get digested.
 				$rootScope.$apply( function()
 				{
-					_this._processMessage( msg );
+					_this._processServerMessage( msg );
 				} );
 			} );
 		} );
@@ -280,14 +280,21 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 		this._sendNextMessage();
 	}
 
-	ChatClient.prototype.outputMessage = function( roomId, type, message, isPrimer )
+	ChatClient.prototype.processChatMessage = function( message, type )
 	{
+		message.type = type;
+		message.time = message.loggedOn;
+		message.loggedOn = new Date( message.loggedOn );
+		message.combine = false;
+
+		return message;
+	};
+
+	ChatClient.prototype.outputMessage = function( message, isPrimer )
+	{
+		var roomId = message.roomId;
+
 		if ( this.openRooms[ roomId ] ) {
-
-			message.type = type;
-			message.loggedOn = new Date( message.loggedOn );
-			message.combine = false;
-
 			if ( this.messages[ roomId ].length ) {
 				var latestMessage = _.last( this.messages[ roomId ] );
 
@@ -311,7 +318,33 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 		}
 	};
 
-	ChatClient.prototype._processMessage = function( msg )
+	ChatClient.prototype.outputScrollback = function( roomId, scrollbackMessages )
+	{
+		var _this = this;
+
+		if ( this.openRooms[ roomId ] ) {
+			scrollbackMessages = scrollbackMessages.map( function( m )
+			{
+				return _this.processChatMessage(m);
+			} );
+
+			this.messages[ roomId ] = scrollbackMessages.concat( this.messages[ roomId ] );
+
+			var lastMessage = null;
+			for ( var i = 0; i < scrollbackMessages.length + 1; i++ ) {
+				var message = this.messages[ roomId ][ i ];
+				if ( lastMessage != null ) {
+					if ( message.userId == lastMessage.userId && message.loggedOn.getTime() - lastMessage.loggedOn.getTime() <= 5 * 60 * 1000 ) {
+						message.combine = true;
+					}
+				}
+
+				lastMessage = message;
+			}
+		}
+	};
+
+	ChatClient.prototype._processServerMessage = function( msg )
 	{
 		/**
 		 * Will be called when the user is ready to chat (set-cookie must be sent by us before this fired).
@@ -590,6 +623,15 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 		else if ( msg.event === 'online-count' ) {
 			this.allCount = msg.data.onlineCount;
 		}
+		else if ( msg.event === 'room-scrollback' ) {
+			var roomId = msg.data.roomId;
+			var scrollbackMessages = msg.data.messages;
+
+			scrollbackMessages.reverse();
+			this.outputScrollback( roomId, scrollbackMessages );
+
+			$rootScope.$emit( 'Chat.scrollbackLoaded', roomId );
+		}
 	};
 
 	ChatClient.prototype._joinRoom = function( room, messages, users, isSource )
@@ -664,7 +706,7 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 
 		angular.forEach( messages, function( msg )
 		{
-			this.outputMessage( msg.roomId, ChatConfig.MSG_NORMAL, msg, isPrimer );
+			this.outputMessage( this.processChatMessage( msg, ChatConfig.MSG_NORMAL ), isPrimer );
 
 			// Emit an event that we've sent out a new message.
 			$rootScope.$emit( 'Chat.newMessage', { message: msg, isPrimer: isPrimer } );
@@ -717,7 +759,7 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 			loggedOn: Date.now(),
 		};
 
-		this.outputMessage( roomId, ChatConfig.MSG_SYSTEM, message, false );
+		this.outputMessage( this.processChatMessage( message, ChatConfig.MSG_SYSTEM ), false );
 	};
 
 	ChatClient.prototype.canModerate = function( room, targetUser, action )
@@ -812,7 +854,7 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 		return room.isMutedGlobal || room.isMutedRoom;
 	};
 
-	ChatClient.prototype.setFocused = function ( focused )
+	ChatClient.prototype.setFocused = function( focused )
 	{
 		this.isFocused = focused;
 
@@ -825,6 +867,11 @@ angular.module( 'App.Chat' ).factory( 'ChatClient', function( $window, $timeout,
 
 			this.friendsList.touchRoom( this.room.id );
 		}
+	};
+
+	ChatClient.prototype.loadScrollback = function()
+	{
+		this.primus.write( { event: 'room-scrollback', roomId: this.room.id, beforeTime: this.messages[this.room.id][0].time } );
 	};
 
 	ChatClient.prototype.isPMRoom = function( room )

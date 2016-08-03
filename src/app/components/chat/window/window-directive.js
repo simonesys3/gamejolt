@@ -10,7 +10,7 @@ angular.module( 'App.Chat' ).directive( 'gjChatWindow', function()
 		},
 		bindToController: true,
 		controllerAs: 'ctrl',
-		controller: function( $scope, Chat, Chat_Room, Screen, Shell, ChatConfig, Chat_SaveRoomModal, Chat_RoomDetailsModal )
+		controller: function( $rootScope, $scope, $timeout, $window, Chat, Chat_Room, Screen, Shell, ChatConfig, Chat_SaveRoomModal, Chat_RoomDetailsModal )
 		{
 			var _this = this;
 
@@ -96,11 +96,46 @@ angular.module( 'App.Chat' ).directive( 'gjChatWindow', function()
 				return false;
 			};
 
-			this.loadScrollback = function()
+			var outputElem = angular.element( document.getElementById( 'chat-window-output' ) );
+			this.height = -1;
+			this.showJumpToPresent = false;
+
+			this.jumpToPresent = function() {
+				outputElem.scrollTop( outputElem[0].scrollHeight );
+				_this.showJumpToPresent = false;
+			}
+
+			outputElem.on( 'scroll', function ()
 			{
-				console.log('scrolled to top');
-				this.loadingScrollback = true;
-			};
+				$scope.$apply( function()
+				{
+					var scrollHeight = outputElem[0].scrollHeight;
+					var scrollFromBottom = outputElem[0].scrollHeight - ( outputElem[0].scrollTop + outputElem[0].offsetHeight );
+
+					if ( outputElem[ 0 ].scrollTop === 0 ) {
+						_this.height = scrollHeight;
+						_this.loadingScrollback = true;
+
+						Chat.client.loadScrollback();
+					}
+
+					if ( scrollFromBottom > 1600 ) {
+						_this.showJumpToPresent = true;
+					} else {
+						_this.showJumpToPresent = false;
+					}
+				} );
+			} );
+
+			$rootScope.$on( 'Chat.scrollbackLoaded', function( roomId )
+			{
+				_this.loadingScrollback = false;
+
+				$timeout( function()
+				{
+					outputElem.scrollTop( outputElem[0].scrollHeight - _this.height );
+				}, 70 );
+			} );
 		}
 	};
 } );

@@ -134,9 +134,8 @@ $chat-room-window-padding = 15px
  * Chat Window Output
  */
 .chat-window-output
-	flex: 1 1 auto
-	overflow-y: auto
-	overflow-x: hidde
+	overflow-y: scroll
+	overflow-x: hidden
 	padding: $chat-room-window-padding
 	font-size: $font-size-small
 	background-color: $white
@@ -251,7 +250,24 @@ $chat-room-window-padding = 15px
 			font-style: italic
 
 .chat-window-send-container
+	position: relative
 	width: 100%
 	flex: 0 0 auto
 	background-color: $gray-lightest
 	padding: $chat-room-window-padding
+
+	.chat-window-jump-to-present
+		position: absolute
+		top: -($chat-room-window-padding + 16px)
+		right: $chat-room-window-padding
+		left: $chat-room-window-padding
+		padding: 4px 6px
+		background-color: $gj-dark-green
+		font-size: 13px
+		color: $gj-green
+		border-radius: 4px
+		cursor: pointer;
+
+		&:hover
+			opacity: 0.9
+			top: -($chat-room-window-padding + 15px)
