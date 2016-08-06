@@ -8,7 +8,8 @@ import { ActivityFeedService } from './../../../../components/activity/feed/feed
 @Injectable()
 export class OverviewCtrl
 {
-	games: any[];
+	devlogGames: any[];
+	earlyAccessGames: any[];
 	posts: ActivityFeedContainer;
 
 	isLearnMoreExpanded = false;
@@ -33,7 +34,8 @@ export class OverviewCtrl
 
 		meta.twitter.image = '/app/views/discover/devlogs/social.png';
 
-		this.games = game.populate( payload.games );
+		this.devlogGames = game.populate( payload.games );
+		this.earlyAccessGames = game.populate( payload.earlyAccessGames );
 		this.posts = feedService.bootstrap( firesidePostModel.populate( payload.posts ) );
 	}
 }

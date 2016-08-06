@@ -43,9 +43,9 @@
 <section class="section">
 	<div class="container">
 
-		<h2 class="section-header">
+		<h2 class="section-header sans-margin-bottom">
 			<a class="link-unstyled"
-				ui-sref="discover.devlogs.games._fetch"
+				ui-sref="discover.devlogs.list._fetch( { section: 'hot' } )"
 				gj-track-event="channel:row-heading:best"
 				translate
 				>
@@ -53,12 +53,20 @@
 			</a>
 		</h2>
 
+		<div class="row">
+			<div class="col-sm-10 col-md-8 col-lg-6">
+				<p class="text-muted small" translate>
+					Devlog game pages aren't playable, but they're in active development with stuff to show!
+				</p>
+			</div>
+		</div>
+
 		<div class="full-bleed-xs" ng-class="{ 'scrollable-grid-xs': Screen.isXs }">
 			<div ng-class="{ 'row': !Screen.isXs }">
 				<gj-game-thumbnail
 					class="col-xs-11 col-sm-4 col-md-3"
 					ng-class="{ 'scrollable-grid-item': Screen.isXs }"
-					ng-repeat="game in overviewCtrl.games | limitTo:(Screen.isMobile ? 6 : 8 ) track by game.id"
+					ng-repeat="game in overviewCtrl.devlogGames | limitTo:(Screen.isMobile ? 3 : 4 ) track by game.id"
 					gj-game="game"
 					gj-track-event="channel:slider:game:{{ $index }}"
 					>
@@ -68,7 +76,48 @@
 
 		<div class="page-cut">
 			<a class="btn btn-outline"
-				ui-sref="discover.devlogs.games._fetch"
+				ui-sref="discover.devlogs.list._fetch( { section: 'hot' } )"
+				gj-track-event="channel:more-btn:best"
+				translate
+				>
+				Load More
+			</a>
+		</div>
+
+		<h2 class="section-header sans-margin-bottom">
+			<a class="link-unstyled"
+				ui-sref="discover.devlogs.early-access._fetch( { section: 'hot' } )"
+				gj-track-event="channel:row-heading:best"
+				translate
+				>
+				Featured Early Access
+			</a>
+		</h2>
+
+		<div class="row">
+			<div class="col-sm-10 col-md-8 col-lg-6">
+				<p class="text-muted small" translate>
+					Early access game pages have playable builds to try out, they're in active development, and you can follow along.
+				</p>
+			</div>
+		</div>
+
+		<div class="full-bleed-xs" ng-class="{ 'scrollable-grid-xs': Screen.isXs }">
+			<div ng-class="{ 'row': !Screen.isXs }">
+				<gj-game-thumbnail
+					class="col-xs-11 col-sm-4 col-md-3"
+					ng-class="{ 'scrollable-grid-item': Screen.isXs }"
+					ng-repeat="game in overviewCtrl.earlyAccessGames | limitTo:(Screen.isMobile ? 3 : 4 ) track by game.id"
+					gj-game="game"
+					gj-track-event="channel:slider:game:{{ $index }}"
+					>
+				</gj-game-thumbnail>
+			</div>
+		</div>
+
+		<div class="page-cut">
+			<a class="btn btn-outline"
+				ui-sref="discover.devlogs.early-access._fetch( { section: 'hot' } )"
 				gj-track-event="channel:more-btn:best"
 				translate
 				>

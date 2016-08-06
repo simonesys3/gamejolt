@@ -1,8 +1,10 @@
 import Overview from './overview/overview';
-import Games from './games/games';
+import List from './list/list';
+import EarlyAccess from './early-access/early-access';
 
 export default angular.module( 'App.Views.Devlogs', [
 	Overview,
-	Games,
+	List,
+	EarlyAccess,
 ] )
 .name;

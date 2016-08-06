@@ -1,10 +1,10 @@
 angular.module( 'App.Views' ).config( function( $stateProvider )
 {
-	$stateProvider.state( 'discover.devlogs.games', {
+	$stateProvider.state( 'discover.devlogs.early-access', {
 		abstract: true,
-		controller: 'Discover.Devlogs.GamesCtrl',
+		controller: 'Discover.Devlogs.EarlyAccessCtrl',
 		controllerAs: '$ctrl',
-		templateUrl: '/app/views/discover/devlogs/games/games.html',
+		templateUrl: '/app/views/discover/devlogs/early-access/early-access.html',
 		resolve: {
 
 			// We need translations loaded in for the filtering container, so we wait for "init".

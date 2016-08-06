@@ -1,19 +1,13 @@
 angular.module( 'App.Views' ).config( function( $stateProvider, $urlMatcherFactoryProvider, $urlRouterProvider )
 {
-	$stateProvider.state( 'discover.devlogs.games._fetch', {
-		url: '/games/:section?query&page',
-		params: {
-			section: {
-				value: 'hot',
-				squash: true,
-			},
-		},
-		controller: 'Discover.Devlogs.Games._FetchCtrl',
-		templateUrl: '/app/views/discover/devlogs/games/_fetch.html',
+	$stateProvider.state( 'discover.devlogs.list._fetch', {
+		url: '/{section:hot|best|new}?query&page',
+		controller: 'Discover.Devlogs.List._FetchCtrl',
+		templateUrl: '/app/views/discover/devlogs/list/_fetch.html',
 		resolve: {
 			payload: function( $state, $stateParams, Api, filteringContainer )
 			{
-				return filteringContainer.init( 'discover.devlogs.games._fetch', $stateParams )
+				return filteringContainer.init( 'discover.devlogs.list._fetch', $stateParams )
 					.then( function()
 					{
 						var query = filteringContainer.getQueryString( $stateParams );

@@ -1,8 +1,8 @@
 import { Injectable, Inject } from 'ng-metadata/core';
-import { GamesCtrl } from './games-controller';
+import { EarlyAccessCtrl } from './early-access-controller';
 
 interface Scope extends ng.IScope {
-	$ctrl: GamesCtrl;
+	$ctrl: EarlyAccessCtrl;
 }
 
 @Injectable()
