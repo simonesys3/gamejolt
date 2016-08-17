@@ -44,7 +44,11 @@ angular.module( 'App.Chat' ).directive( 'gjChatUserList', function()
 			},
 			function( users )
 			{
-				_this.users = users;
+				_this.users = users.map( function( u )
+				{
+					u.isShown = false;
+					return u;
+				} );
 			} );
 
 			// We do it this way we can reduce watches and freeze the URL for the user.
@@ -131,6 +135,13 @@ angular.module( 'App.Chat' ).directive( 'gjChatUserList', function()
 					return;
 				}
 				client.unmute( user.id, this.room.id );
+			};
+
+			this.userInView = function( user, inview )
+			{
+				if ( inview ) {
+					user.isShown = true;
+				}
 			};
 		}
 	};

@@ -16,6 +16,7 @@
 		<!-- Room Users -->
 		<div class="fill-darkest chat-window-users scrollable overlay-scrollbar anim-fade-enter-enlarge anim-fade-leave-shrink"
 			ng-if="ctrl.room.type != Chat_Room.TYPE_PM && ctrl.isShowingUsers"
+			in-view-container
 			>
 
 			<div ng-if="Screen.isXs">

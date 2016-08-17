@@ -18,6 +18,7 @@
 		<li class="no-animate chat-user"
 			ng-repeat="user in ctrl.users track by user._trackId"
 			ng-show="!ctrl.filterQuery || user.displayName.toLowerCase().indexOf( ctrl.filterQuery.toLowerCase() ) != -1"
+			in-view="ctrl.userInView( user, $inview )"
 			>
 
 			<a ng-href="{{ ::ctrl.getUserProfileUrl( user ) }}"
@@ -44,7 +45,8 @@
 				</div>
 
 				<div class="chat-user-avatar">
-					<img ng-src="{{ ::user.imgAvatar }}" />
+					<img ng-src="{{ ::user.imgAvatar }}" ng-if="user.isShown" />
+					<img ng-if="!user.isShown" />
 
 					<span class="chat-user-status"
 						ng-if="::user.isOnline !== undefined"
