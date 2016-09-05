@@ -162,14 +162,15 @@
 
 <div class="devlog-post-controls-well" ng-if="$ctrl.tab" ng-switch="$ctrl.tab">
 
-	<gj-comment-widget
-		ng-switch-when="comments"
-		resource="Fireside_Post"
-		resource-id="::$ctrl.post.id"
-		no-intro="true"
-		on-comment-count="$ctrl.post.comment_count = $count"
-		>
-	</gj-comment-widget>
+	<div ng-switch-when="comments" class="devlog-post-controls-comments">
+		<gj-comment-widget
+			resource="Fireside_Post"
+			resource-id="::$ctrl.post.id"
+			no-intro="true"
+			on-comment-count="$ctrl.post.comment_count = $count"
+			>
+		</gj-comment-widget>
+	</div>
 
 	<div ng-switch-when="likes">
 		<gj-loading ng-if="!$ctrl.hasLoadedLikes"></gj-loading>
