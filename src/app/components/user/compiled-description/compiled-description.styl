@@ -3,9 +3,13 @@
 	h1, h2, h3, h4, h5, h6
 		@extend .h5
 		font-weight: bold
+		font-size: $font-size-small
 
 		&:first-child
 			margin-top: 0
+
+	p, li
+		font-size: $font-size-small
 
 	// Widgets some times create empty P tags.
 	// This hides them so they don't add extra spacing to the page.
