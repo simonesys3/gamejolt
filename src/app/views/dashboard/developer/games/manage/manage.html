@@ -1,4 +1,4 @@
-<section class="section section-thin fill-pink" ng-if="::manageCtrl.game.is_locked">
+<section class="section section-thin fill-pink" ng-if="::manageCtrl.game.locked_status == Game.LOCKED_STATUS_DMCA">
 	<div class="container">
 		<div class="col-sm-10 col-md-8 col-lg-6 col-centered text-center">
 			<p>
@@ -6,6 +6,18 @@
 			</p>
 			<p><b translate>This game was removed from the site.</b></p>
 			<p translate>We have received a DMCA takedown notice and were required to remove it from the site. Only you are able to view it.</p>
+		</div>
+	</div>
+</section>
+
+<section class="section section-thin fill-pink" ng-if="::manageCtrl.game.locked_status == Game.LOCKED_STATUS_AUTOHANDLED">
+	<div class="container">
+		<div class="col-sm-10 col-md-8 col-lg-6 col-centered text-center">
+			<p>
+				<span class="jolticon jolticon-notice big"></span>
+			</p>
+			<p><b translate>This game was removed from the site.</b></p>
+			<p translate>We've received a large number of reports/complaints for your game and have removed it from the site. Only you are able to view it. If you feel this is an error, please email <a href="mailto:contact@gamejolt.com">contact@gamejolt.com</a></p>
 		</div>
 	</div>
 </section>
