@@ -146,6 +146,7 @@ var config = {
 	sections: [
 		'auth',
 		'checkout',
+		'client',
 	],
 	translations: 'site-translations',
 	translationSections: {

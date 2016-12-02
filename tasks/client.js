@@ -153,7 +153,7 @@ module.exports = function( config )
 				base = '/package' + base;
 			}
 
-			return gulp.src( config.buildDir + '/' + section + '.html' )
+			return gulp.src( config.buildDir + '/' + section + '.html', { allowEmpty: true } )
 				.pipe( plugins.replace( '<base href="/">', '<base href="' + base + '">' ) )
 				.pipe( gulp.dest( config.buildDir ) );
 		} );
@@ -167,19 +167,19 @@ module.exports = function( config )
 	gulp.task( 'client:prepare', function( cb )
 	{
 		// Load in the client package.
-		var packageJson = require( '../package.json' );
-		var clientJson = require( '../client-package.json' );
+		// var packageJson = require( '../package.json' );
+		// var clientJson = require( '../client-package.json' );
 
-		// Copy over values from main package.json to keep in sync.
-		clientJson.version = packageJson.version;
+		// // Copy over values from main package.json to keep in sync.
+		// clientJson.version = packageJson.version;
 
-		// Gotta pull the node_modules that we need.
-		clientJson.dependencies = packageJson.dependencies;
+		// // Gotta pull the node_modules that we need.
+		// clientJson.dependencies = packageJson.dependencies;
 
-		// If we're in dev, then add the toolbar for debugging.
-		if ( !config.production ) {
-			clientJson.window.toolbar = true;
-		}
+		// // If we're in dev, then add the toolbar for debugging.
+		// if ( !config.production ) {
+		// 	clientJson.window.toolbar = true;
+		// }
 
 		if ( !config.watching && os.type() != 'Darwin' ) {
 
@@ -189,7 +189,8 @@ module.exports = function( config )
 		}
 
 		// Copy the package.json file over into the build directory.
-		fs.writeFileSync( config.buildDir + '/package.json', JSON.stringify( clientJson ) );
+		// fs.writeFileSync( config.buildDir + '/package.json', JSON.stringify( clientJson ) );
+		fs.writeFileSync( config.buildDir + '/package.json', fs.readFileSync( path.resolve( './package.json' ) ) );
 		fs.writeFileSync( config.buildDir + '/update-hook.js', fs.readFileSync( path.resolve( './src/update-hook.js' ) ) );
 
 		cb();

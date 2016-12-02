@@ -1,8 +1,9 @@
 {
   "name": "game-jolt",
   "version": "0.10.2",
+  "main": "client/app.js",
   "scripts": {
-    "client": "nw build/client/dev/source",
+    "client": "./node_modules/.bin/electron build/client/dev/source",
     "client-build-win": "gulp --production --client --arch=32",
     "client-build-osx": "gulp --production --client --arch=64",
     "client-build-linux32": "gulp --production --client --arch=32",
@@ -13,6 +14,7 @@
     "@types/angular-gettext": "^2.1.29",
     "@types/angular-hotkeys": "0.0.30",
     "@types/angular-ui-router": "^1.1.30",
+    "@types/electron": "^1.4.29",
     "@types/hammerjs": "^2.0.28",
     "@types/lodash": "0.0.27",
     "@types/moment": "^2.11.28",
@@ -21,6 +23,7 @@
     "concat-with-sourcemaps": "~1.0.2",
     "connect-history-api-fallback": "0.0.4",
     "decompress-zip": "^0.2.0",
+    "electron": "^1.4.10",
     "glob-expand": "~0.0.2",
     "gulp": "gulpjs/gulp#4.0",
     "gulp-angular-embed-templates": "^2.1.0",

@@ -51,6 +51,11 @@
 				document.getElementsByTagName("head")[0].appendChild(msViewportStyle);
 			}
 
+			if ( module && module.exports ) {
+				window.gjIsClient = true;
+				delete module.exports;
+			}
+
 		</script>
 
 		<link rel="stylesheet" href="/app/main.css">
