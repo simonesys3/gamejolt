@@ -78,6 +78,13 @@ function createWindow()
 	// Open the DevTools.
 	win.webContents.openDevTools();
 
+	const basePath = path.resolve( __dirname, '..' ).replace( /\\/g, /\\\\/ );
+
+	win.webContents.executeJavaScript(`
+		var path = require( 'path' );
+		module.paths.push( path.resolve( '${basePath}', 'node_modules' ) );
+	`);
+
 	// Emitted when the window is closed.
 	win.on( 'closed', () =>
 	{
