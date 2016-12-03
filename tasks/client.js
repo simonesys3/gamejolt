@@ -147,7 +147,7 @@ module.exports = function( config )
 		{
 			// Base tag for index.html is different.
 			// App uses fallback mode for location since it's not served through a server.
-			var base = '/' + section + '.html';
+			var base = './' + section + '.html';
 
 			return gulp.src( config.buildDir + '/' + section + '.html', { allowEmpty: true } )
 				.pipe( plugins.replace( '<base href="/">', '<base href="' + base + '">' ) )
