@@ -1,8 +1,6 @@
-const { app, protocol, BrowserWindow, ipcMain } = require( 'electron' );
+const { app, BrowserWindow } = require( 'electron' );
 const path = require( 'path' );
 const url = require( 'url' );
-const fs = require( 'fs' );
-const mime = require( 'mime' );
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -13,77 +11,21 @@ let win: Electron.BrowserWindow | undefined;
 // Some APIs can only be used after this event occurs.
 app.on( 'ready', createWindow );
 
-function requestFileJob( filePath: string, finish: Function )
-{
-	// console.log( 'read', filePath );
-
-	fs.readFile( filePath, ( err: NodeJS.ErrnoException, buf: NodeBuffer ) =>
-	{
-		if ( err ) {
-			if ( err.errno === 34 ) {
-				finish( -6 ); // net::ERR_FILE_NOT_FOUND
-				return;
-			}
-			else {
-				finish( -2 ); // net::FAILED
-				return;
-			}
-		}
-
-		finish( {
-			data: buf,
-			mimeType: mime.lookup( filePath ) || 'text/plain',
-		});
-	});
-}
-
 function createWindow()
 {
-	protocol.interceptBufferProtocol( 'file', ( request, callback ) =>
-	{
-		const parsed = url.parse( request.url );
-		let filePath = decodeURIComponent( parsed.pathname );
-
-		// console.log( filePath );
-
-		// NB: pathname has a leading '/' on Win32 for some reason
-		if ( process.platform === 'win32' ) {
-			filePath = filePath.slice( 1 );
-		}
-
-		filePath = path.resolve( __dirname, '..', filePath.substring( 'C:/'.length ) );
-
-		// console.log( filePath );
-
-		requestFileJob( filePath, callback );
-	},
-	function ( err )
-	{
-		if ( err ) {
-			console.error( err );
-		}
-	});
-
 	// Create the browser window.
 	win = new BrowserWindow( { width: 800, height: 600 } );
 
 	// and load the index.html of the app.
 	win.loadURL( url.format( {
 		protocol: 'file:',
-		pathname: path.resolve( '/index.html' ),
+		pathname: path.join( __dirname, '..', 'index.html' ),
 		hash: '#!/',
 		slashes: true,
 	}) );
 
 	// Open the DevTools.
 	win.webContents.openDevTools();
-
-	const basePath = path.resolve( __dirname, '..' ).replace( /\\/g, /\\\\/ );
-
-	win.webContents.executeJavaScript(`
-		var path = require( 'path' );
-		module.paths.push( path.resolve( '${basePath}', 'node_modules' ) );
-	`);
 
 	// Emitted when the window is closed.
 	win.on( 'closed', () =>
@@ -119,16 +61,3 @@ app.on( 'activate', () =>
 // 	console.log(arg);  // prints "ping"
 // 	event.sender.send('asynchronous-reply', 'pong');
 // });
-
-ipcMain.on( 'get-package-json', ( event ) =>
-{
-	const cwd = path.dirname( __dirname );
-	console.log( cwd );
-
-	const packagePath = path.resolve( cwd, 'package.json' );
-	console.log( packagePath );
-
-	event.returnValue = require( packagePath );
-
-	// event.returnValue = 'pong';
-} );

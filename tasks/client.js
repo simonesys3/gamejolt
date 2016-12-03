@@ -8,6 +8,7 @@ var _ = require( 'lodash' );
 var shell = require( 'gulp-shell' );
 var path = require( 'path' );
 var mv = require( 'mv' );
+var relativePaths = require( '../src/lib/gj-lib-client/gulp/plugins/gulp-relative-paths' );
 
 module.exports = function( config )
 {
@@ -148,11 +149,6 @@ module.exports = function( config )
 			// App uses fallback mode for location since it's not served through a server.
 			var base = '/' + section + '.html';
 
-			// When packaged up, we put it in the sub-folder: "package".
-			if ( !config.watching && os.type() != 'Darwin' ) {
-				base = '/package' + base;
-			}
-
 			return gulp.src( config.buildDir + '/' + section + '.html', { allowEmpty: true } )
 				.pipe( plugins.replace( '<base href="/">', '<base href="' + base + '">' ) )
 				.pipe( gulp.dest( config.buildDir ) );
@@ -181,13 +177,6 @@ module.exports = function( config )
 		// 	clientJson.window.toolbar = true;
 		// }
 
-		if ( !config.watching && os.type() != 'Darwin' ) {
-
-			// We set the base directory to use the "package" folder.
-			clientJson.main = 'app://game-jolt-client/package/index.html#!/';
-			clientJson.window.icon = 'package/' + clientJson.window.icon;
-		}
-
 		// Copy the package.json file over into the build directory.
 		// fs.writeFileSync( config.buildDir + '/package.json', JSON.stringify( clientJson ) );
 		fs.writeFileSync( config.buildDir + '/package.json', fs.readFileSync( path.resolve( './package.json' ) ) );
@@ -215,33 +204,12 @@ module.exports = function( config )
 	 */
 	gulp.task( 'client:modify-urls', function( cb )
 	{
-		if ( os.type() == 'Darwin' ) {
-			cb();
-			return;
-		}
-
-		var revAll = new plugins.revAll( {
-			prefix: 'app://game-jolt-client/package',
-			dontGlobal: [
-				/^\/node_modules\/.*$/,
-				/^\/tmp\/.*$/,
-			],
-			dontRenameFile: [ /^.*$/ ],  // Don't rename anything.
-			transformFilename: function( file, hash )
-			{
-				// Don't rename the file reference at all, either.
-				return path.basename( file.path );
-			},
-			debug: true,
-		} );
-
-		// Ignore folders from the very beginning speeds up the injection a lot.
 		return gulp.src( [
 				config.buildDir + '/**',
 				'!' + config.buildDir + '/node_modules/**',
 				'!' + config.buildDir + '/tmp/**',
 			] )
-			.pipe( revAll.revision() )
+			.pipe( relativePaths() )
 			.pipe( gulp.dest( config.buildDir ) );
 	} );
 
@@ -418,7 +386,7 @@ module.exports = function( config )
 
 	if ( config.client ) {
 		if ( config.watching ) {
-			gulp.task( 'post', gulp.series( 'client:prepare' ) );
+			gulp.task( 'post', gulp.series( 'client:prepare', 'client:modify-urls' ) );
 		}
 		else {
 			gulp.task( 'post', gulp.series( 'client:prepare', 'client:node-modules', 'client:modify-urls', 'client:nw', 'client:nw-unpackage', 'client:package' ) );
