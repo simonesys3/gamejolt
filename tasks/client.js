@@ -197,6 +197,8 @@ module.exports = function( config )
 
 	var nodeModuletasks = [
 		'cd ' + config.buildDir + ' && npm install --production',
+		config.platform == 'win' ? 'rmdir /s node_modules\\nan' : 'rm -rf node_modules/nan',
+		'npm install nan@2.3.2',
 		'cd ' + path.resolve( config.buildDir, lzmaPath ) + ' && node-pre-gyp clean configure build --runtime=node-webkit --target=0.12.3 --target_arch=' + config.gypArch,
 	];
 
