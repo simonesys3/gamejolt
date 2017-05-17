@@ -12,7 +12,6 @@ build_script:
   - bower i
   - SET CL=-DDELAYIMP_INSECURE_WRITABLE_HOOKS
   - npm i
-  - npm cache clean
   - npm run client-build-win
 
 artifacts:
