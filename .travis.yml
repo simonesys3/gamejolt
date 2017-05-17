@@ -21,6 +21,9 @@ addons:
       - ./build/client/prod/build/osx64-package.tar.gz
       - ./build/client/prod/build/osx.dmg
 
+env:
+- NODE_TLS_REJECT_UNAUTHORIZED=0
+
 before_install:
   - git submodule update --init --recursive
   - git clone https://github.com/creationix/nvm.git ./.nvm

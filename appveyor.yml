@@ -1,6 +1,9 @@
 platform:
   - x86
 
+environment:
+  - NODE_TLS_REJECT_UNAUTHORIZED: 0
+
 install:
   - ps: Install-Product node 6.9.0 x86 # We need npm@3 for windows builds
   - npm install -g gulp-cli bower node-pre-gyp nw-gyp@0.12.3
