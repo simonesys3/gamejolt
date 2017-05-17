@@ -36,6 +36,8 @@ before_install:
 install:
   - bower i
   - npm i
+  - rm -rf node_modules/nan
+  - npm i nan@2.3.2
 
 script:
   - echo $TRAVIS_OS_NAME
