@@ -15,7 +15,7 @@ build_script:
   - bower i
   - SET CL=-DDELAYIMP_INSECURE_WRITABLE_HOOKS
   - npm i
-  - rmdir /s node_modules/nan
+  - rmdir /s node_modules\nan
   - npm i nan@2.3.2
   - npm run client-build-win
 
