@@ -19,6 +19,7 @@ angular.module( 'App.Client.Library' )
 {
 	var _this = this;
 
+	this.isLoaded = false;
 	this.packages = {};
 	this.packagesByGame = {};
 	this.games = {};
@@ -93,6 +94,7 @@ angular.module( 'App.Client.Library' )
 				}
 
 				_this.packagesByGame = _.groupBy( _this.packages, 'game_id' );
+				_this.isLoaded = true;
 
 				$rootScope.$emit( 'Client_Library.watchersSet' );
 			} );

@@ -3,6 +3,7 @@ angular.module( 'App.Client', [
 	'App.Client.Shortcut',
 	'App.Client.Autostart',
 	'App.Client.Intro',
+	'App.Client.Migrate',
 	'App.Client.User',
 	'App.Client.LocalDb',
 	'App.Client.Tray',

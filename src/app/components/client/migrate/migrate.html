@@ -1,0 +1,41 @@
+<div class="client-migrate fill-darkest" ng-if="!$ctrl.isClosed">
+	<div class="container client-migrate-content">
+		<div class="col-sm-10 col-md-8 col-lg-6 col-centered">
+			<h1>Migrating Games</h1>
+			<p>We need to update your game DB to the latest version.</p>
+
+			<div class="progress progress-thin"
+				ng-class="{
+					'progress-success': !$ctrl.packageFailed,
+					'progress-danger': $ctrl.packageFailed,
+				}"
+				>
+				<div class="progress-bar"
+					ng-style="{ width: $ctrl.progress() + '%' }"
+					>
+				</div>
+			</div>
+
+			<div ng-if="$ctrl.packageFailed">
+				<div class="alert alert-warning">
+					<p><b>{{ $ctrl.packageTitle( $ctrl.currentPackage ) }} could not be migrated.</b></p>
+					<p>This may be because you currently have the game running. Restarting your computer might help. If that doesn't work, you will have to uninstall the game and reinstall it after the migration is done.</p>
+
+					<div class="alert-actions">
+						<button class="btn btn-success-outline" ng-click="$ctrl.retry()">
+							Retry
+						</button>
+
+						<button class="btn btn-danger-outline" ng-click="$ctrl.uninstall()">
+							Uninstall Game
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<div ng-if="!$ctrl.packageFailed">
+				<gj-loading class="loading-centered" loading-stationary="true" label="Processing..."></gj-loading>
+			</div>
+		</div>
+	</div>
+</div>

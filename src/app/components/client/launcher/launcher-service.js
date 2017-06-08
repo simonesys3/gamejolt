@@ -10,6 +10,7 @@ angular.module( 'App.Client.Launcher' )
 {
 	var _this = this;
 
+	this.isLoaded = false;
 	this.currentlyPlaying = [];
 
 	this.init = function()
@@ -45,6 +46,8 @@ angular.module( 'App.Client.Launcher' )
 						_this.reattach( localPackage );
 					}
 				} );
+
+				_this.isLoaded = true;
 			} );
 	};
 
