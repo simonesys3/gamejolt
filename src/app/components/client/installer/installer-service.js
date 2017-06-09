@@ -65,22 +65,22 @@ angular.module( 'App.Client.Installer' )
 
 	this.checkQueueSettings = function()
 	{
-		var Queue = require( 'client-voodoo' ).VoodooQueue;
+		// var Queue = require( 'client-voodoo' ).VoodooQueue;
 
-		Queue.faster = {
-			downloads: Settings.get( 'max-download-count' ),
-			extractions: Settings.get( 'max-extract-count' ),
-		};
+		// Queue.faster = {
+		// 	downloads: Settings.get( 'max-download-count' ),
+		// 	extractions: Settings.get( 'max-extract-count' ),
+		// };
 
-		if ( Settings.get( 'queue-when-playing' ) ) {
-			Queue.slower = {
-				downloads: 0,
-				extractions: 0,
-			};
-		}
-		else {
-			Queue.slower = Queue.faster;
-		}
+		// if ( Settings.get( 'queue-when-playing' ) ) {
+		// 	Queue.slower = {
+		// 		downloads: 0,
+		// 		extractions: 0,
+		// 	};
+		// }
+		// else {
+		// 	Queue.slower = Queue.faster;
+		// }
 	};
 
 	this.retryInstall = function( localPackage )
@@ -144,102 +144,105 @@ angular.module( 'App.Client.Installer' )
 			} );
 		}
 
-		function getDownloadUrl()
-		{
-			return localPackage.getDownloadUrl()
-				.then( function( response )
-				{
-					return response.downloadUrl;
-				} );
-		}
-
 		var operation = localPackage.install_state ? 'install' : 'update';
 		var packageTitle = (localPackage.title || game.title);
 		if ( packageTitle != game.title ) {
 			packageTitle += ' for ' + game.title;
 		}
 
-		var patchHandle = null;
+		var patchInstance = null;
 		return promise
 			.then( function()
 			{
 				var Patcher = require( 'client-voodoo' ).Patcher;
+				return Patcher.patch( localPackage );
+			} )
+			.then( function( patchInstance )
+			{
+				return $q( function( resolve, reject )
+				{
+					_this._startPatching( localPackage, patchInstance );
 
-				patchHandle = Patcher.patch( getDownloadUrl, localPackage );
+					patchInstance
+						.on( 'state', function( state )
+						{
+							switch ( state ) {
 
-				patchHandle
-					.onDownloading( function()
-					{
-						$rootScope.$apply( function()
-						{
-							if ( localPackage.install_state ) {
-								localPackage.$setInstallState( LocalDb_Package.DOWNLOADING );
-							}
-							else if ( localPackage.update_state ) {
-								localPackage.$setUpdateState( LocalDb_Package.DOWNLOADING );
-							}
-						} );
-					} )
-					.onProgress( 1, function( progress )
-					{
-						$rootScope.$apply( function()
-						{
-							localPackage.download_progress = progress;
-							localPackage.$save();
-						} );
-					} )
-					.onPatching( function()
-					{
-						$rootScope.$apply( function()
-						{
-							// No longer needed.
-							delete localPackage.download_progress;
+								// Downloading
+								case 1:
+									return $rootScope.$apply( function()
+									{
+										if ( localPackage.install_state ) {
+											localPackage.$setInstallState( LocalDb_Package.DOWNLOADING );
+										}
+										else if ( localPackage.update_state ) {
+											localPackage.$setUpdateState( LocalDb_Package.DOWNLOADING );
+										}
+									} );
 
-							if ( localPackage.install_state ) {
-								localPackage.$setInstallState( LocalDb_Package.UNPACKING );
-							}
-							else if ( localPackage.update_state ) {
-								localPackage.$setUpdateState( LocalDb_Package.UNPACKING );
-							}
-						} );
-					} )
-					.onExtractProgress( 1, function( progress )
-					{
-						$rootScope.$apply( function()
-						{
-							localPackage.unpack_progress = progress;
-							localPackage.$save();
-						} );
-					} )
-					.onPaused( function( wasQueued )
-					{
-						$rootScope.$apply( function()
-						{
-							if ( wasQueued ) {
-								localPackage.$setPatchQueued();
-							}
-							else {
-								localPackage.$setPatchPaused()
-							}
-						} );
-					} )
-					.onResumed( function( wasInQueue )
-					{
-						$rootScope.$apply( function()
-						{
-							if ( wasInQueue ) {
-								localPackage.$setPatchUnqueued();
-							}
-							else {
-								localPackage.$setPatchResumed()
-							}
-						} );
-					} )
-					.start();
+								// Patching
+								case 2:
+									return $rootScope.$apply( function()
+									{
+										// No longer needed.
+										delete localPackage.download_progress;
 
-				_this._startPatching( localPackage, patchHandle );
+										if ( localPackage.install_state ) {
+											localPackage.$setInstallState( LocalDb_Package.UNPACKING );
+										}
+										else if ( localPackage.update_state ) {
+											localPackage.$setUpdateState( LocalDb_Package.UNPACKING );
+										}
+									} );
 
-				return $q.when( patchHandle.promise );
+								// Finished.
+								case 4:
+									return resolve();
+							}
+						} )
+						// .onProgress( 1, function( progress )
+						// {
+						// 	$rootScope.$apply( function()
+						// 	{
+						// 		localPackage.download_progress = progress;
+						// 		localPackage.$save();
+						// 	} );
+						// } )
+						// .onExtractProgress( 1, function( progress )
+						// {
+						// 	$rootScope.$apply( function()
+						// 	{
+						// 		localPackage.unpack_progress = progress;
+						// 		localPackage.$save();
+						// 	} );
+						// } )
+						// .onPaused( function( wasQueued )
+						// {
+						// 	$rootScope.$apply( function()
+						// 	{
+						// 		if ( wasQueued ) {
+						// 			localPackage.$setPatchQueued();
+						// 		}
+						// 		else {
+						// 			localPackage.$setPatchPaused()
+						// 		}
+						// 	} );
+						// } )
+						// .onResumed( function( wasInQueue )
+						// {
+						// 	$rootScope.$apply( function()
+						// 	{
+						// 		if ( wasInQueue ) {
+						// 			localPackage.$setPatchUnqueued();
+						// 		}
+						// 		else {
+						// 			localPackage.$setPatchResumed()
+						// 		}
+						// 	} );
+						// } )
+						// .start();
+						.on( 'fatal', reject );
+				} );
 			} )
 			.then( function()
 			{
@@ -283,10 +286,10 @@ angular.module( 'App.Client.Installer' )
 			} );
 	};
 
-	this._startPatching = function( localPackage, patchHandle )
+	this._startPatching = function( localPackage, patchInstance )
 	{
 		if ( !this.currentlyPatching[ localPackage.id ] ) {
-			this.currentlyPatching[ localPackage.id ] = patchHandle;
+			this.currentlyPatching[ localPackage.id ] = patchInstance;
 			++this.numPatching;
 		}
 	};
@@ -301,44 +304,36 @@ angular.module( 'App.Client.Installer' )
 
 	this.pause = function( localPackage )
 	{
-		var patchHandle = _this.currentlyPatching[ localPackage.id ];
-		if ( !patchHandle ) {
+		var patchInstance = _this.currentlyPatching[ localPackage.id ];
+		if ( !patchInstance ) {
 			throw new Error( 'Package is not installing.' );
 		}
 
-		return patchHandle.stop();
+		return patchInstance.pause();
 	};
 
 	this.resume = function( localPackage )
 	{
-		var patchHandle = _this.currentlyPatching[ localPackage.id ];
+		var patchInstance = _this.currentlyPatching[ localPackage.id ];
 
-		if ( !patchHandle ) {
+		if ( !patchInstance ) {
 			return this.retryInstall( localPackage );
 		}
 
-		return patchHandle.start();
+		return patchInstance.resume();
 	};
 
 	this.cancel = function( localPackage )
 	{
-		return $q( function( resolve, reject )
-		{
-			var patchHandle = _this.currentlyPatching[ localPackage.id ];
-			if ( patchHandle ) {
+		var patchInstance = _this.currentlyPatching[ localPackage.id ];
+		if ( !patchInstance ) {
+			return $q.resolve();
+		}
 
-				// This is absurd, ylivay.
-				patchHandle.onCanceled( function()
-				{
-					_this._stopPatching( localPackage );
-					resolve();
-				} );
-
-				patchHandle.cancel();
-			}
-			else {
-				resolve();
-			}
-		} );
+		return $q.when( patchInstance.cancel() )
+			.then( function()
+			{
+				_this._stopPatching( localPackage );
+			} );
 	};
 } );

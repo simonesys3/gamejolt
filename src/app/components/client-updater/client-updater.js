@@ -5,7 +5,7 @@
 {
 	var Updater = require( 'nwjs-snappy-updater' ).Updater;
 	var path = require( 'path' );
-	var Application = require( 'client-voodoo' ).Application;
+	// var Application = require( 'client-voodoo' ).Application;
 
 	var CHECK_ENDPOINT = 'http://d.gamejolt.net/data/client/manifest-2.json';
 	var CHECK_INTERVAL = 15 * 60 * 1000; // 15min currently
@@ -62,7 +62,7 @@
 				// This is so we can clean up the node_modules folder without the mutex binding being in use by the fs.
 				if ( process.platform === 'win32' ) {
 					try {
-						Application.stop();
+						// Application.stop();
 					}
 					catch ( err ) {}
 				}

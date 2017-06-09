@@ -15,40 +15,15 @@ angular.module( 'App.Client.Launcher' )
 
 	this.init = function()
 	{
-		var gui = require( 'nw.gui' );
-		var Application = require( 'client-voodoo' ).Application;
-		var path = require( 'path' );
-		var pidDir = path.resolve( gui.App.dataPath, 'game-pids' );
-		Application.setPidDir( pidDir );
+		// Reattach all running games after a restart.
+		_.forEach( Client_Library.packages, function( localPackage )
+		{
+			if ( localPackage.isRunning() ) {
+				_this.reattach( localPackage );
+			}
+		} );
 
-		$q.when( Application.ensurePidDir() )
-			.then( function()
-			{
-				// Get all running packages by looking at the game pid directory.
-				var runningPackageIds = require( 'fs' ).readdirSync( pidDir ).map( function( filename )
-				{
-					// Pid files are named after the package ids they are currently running.
-					try {
-						return parseInt( path.basename( filename ) );
-					}
-					catch ( err ) {
-						return false;
-					}
-				} ).filter( function( packageId ) { return !!packageId } );
-
-				// Reattach all running games after a restart.
-				_.forEach( Client_Library.packages, function( localPackage )
-				{
-					if ( runningPackageIds.indexOf( localPackage.id ) !== -1 || localPackage.isRunning() ) {
-						localPackage.$setRunningPid( {
-							wrapperId: localPackage.id.toString(),
-						} );
-						_this.reattach( localPackage );
-					}
-				} );
-
-				_this.isLoaded = true;
-			} );
+		_this.isLoaded = true;
 	};
 
 	this.launch = function( localPackage )
@@ -57,17 +32,21 @@ angular.module( 'App.Client.Launcher' )
 		var os = Device.os();
 		var arch = Device.arch();
 
-		return $q.when( Api.sendRequest( '/web/dash/token/get_for_game', { game_id: localPackage.game_id } ) )
+		return $q.when( Api.sendRequest( '/web/dash/token/get-for-game', { game_id: localPackage.game_id } ) )
 			.catch( function( e )
 			{
 				console.log( 'Could not get game token to launch with - launching anyways' );
 				console.error( e );
 				return null;
 			} )
-			.then( function( credentials )
+			.then( function( payload )
 			{
-				credentials = ( credentials && credentials.username && credentials.token ) ? { username: credentials.username, user_token: credentials.token } : null;
-				return Launcher.launch( localPackage, os, arch, credentials ).promise;
+				var credentials = (payload && payload.username && payload.token)
+					? { username: payload.username, user_token: payload.token }
+					: null;
+
+				// return Launcher.launch( localPackage, os, arch, credentials ).promise;
+				return Launcher.launch( localPackage );
 			} )
 			.then( function( launchInstance )
 			{
@@ -90,8 +69,10 @@ angular.module( 'App.Client.Launcher' )
 			{
 				return _this.attach( localPackage, launchInstance );
 			} )
-			.catch( function()
+			.catch( function( e )
 			{
+				console.log( 'Could not reattach launcher instance', localPackage.running_pid );
+				console.error( e );
 				_this.clear( localPackage );
 			} );
 	};
@@ -100,7 +81,7 @@ angular.module( 'App.Client.Launcher' )
 	{
 		this.currentlyPlaying.push( localPackage );
 
-		launchInstance.on( 'end', function()
+		launchInstance.on( 'gameOver', function()
 		{
 			_this.clear( localPackage );
 		} );

@@ -5,7 +5,7 @@ angular.module( 'App.Client.Autostart' )
 } )
 .service( 'Client_Autostart', function( $q, Device, Environment, Settings )
 {
-	var Autostarter = require( 'client-voodoo' ).Autostarter;
+	// // var Autostarter = require( 'client-voodoo' ).Autostarter;
 	var execPath = process.execPath;
 
 	this.canAutostart = function()
@@ -33,16 +33,19 @@ angular.module( 'App.Client.Autostart' )
 
 	this.set = function()
 	{
-		return $q.when( Autostarter.set( execPath, [ '--silent-start' ] ) );
+		return $q.resolve();
+		// return $q.when( Autostarter.set( execPath, [ '--silent-start' ] ) );
 	};
 
 	this.clear = function()
 	{
-		return $q.when( Autostarter.unset() );
+		return $q.resolve();
+		// return $q.when( Autostarter.unset() );
 	};
 
 	this.check = function()
 	{
-		return $.when( Autostarter.isset() );
+		return $q.resolve();
+		// return $.when( Autostarter.isset() );
 	};
 } );
