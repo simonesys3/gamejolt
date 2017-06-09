@@ -140,7 +140,7 @@ angular.module( 'App.Client.Migrate' ) .service( 'Client_Migrate', function(
 			},
 			launchOptions: {
 				executable: launchOption.executable_path
-					? './' + launchOption.executable_path
+					? launchOption.executable_path
 					: fileList[0],
 			},
 			os: Device.os(),
