@@ -178,7 +178,7 @@ angular.module( 'App.Client.Installer' )
 			.then( function()
 			{
 				var Patcher = require( 'client-voodoo' ).Patcher;
-				return Patcher.patch( localPackage, { authToken: authToken } );
+				return Patcher.patch( localPackage/*, { authToken: authToken }*/ );
 			} )
 			.then( function( patchInstance )
 			{
@@ -324,24 +324,29 @@ angular.module( 'App.Client.Installer' )
 			.catch( function( err )
 			{
 				console.error( err );
-				_this._stopPatching( localPackage );
 
 				var action = operation == 'install' ? 'install' : 'update';
 				var title = operation == 'install' ? 'Installation Failed' : 'Update Failed';
 				Growls.add( 'error', packageTitle + ' failed to ' + action + '.', title );
 
-				if ( localPackage.install_state == LocalDb_Package.DOWNLOADING ) {
-					return localPackage.$setInstallState( LocalDb_Package.DOWNLOAD_FAILED );
+				if ( localPackage.install_state ) {
+					if ( localPackage.install_state == LocalDb_Package.UNPACKING ) {
+						localPackage.$setInstallState( LocalDb_Package.UNPACK_FAILED );
+					}
+					else {
+						localPackage.$setInstallState( LocalDb_Package.DOWNLOAD_FAILED );
+					}
 				}
-				else if ( localPackage.install_state == LocalDb_Package.UNPACKING ) {
-					return localPackage.$setInstallState( LocalDb_Package.UNPACK_FAILED );
+				else if ( localPackage.update_state ) {
+					if ( localPackage.update_state == LocalDb_Package.UNPACKING ) {
+						localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
+					}
+					else {
+						localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
+					}
 				}
-				else if ( localPackage.update_state == LocalDb_Package.DOWNLOADING ) {
-					return localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
-				}
-				else if ( localPackage.update_state == LocalDb_Package.UNPACKING ) {
-					return localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
-				}
+
+				_this._stopPatching( localPackage );
 			} );
 	};
 
