@@ -31,6 +31,9 @@ angular.module( 'App.Client.LocalDb' )
 	LocalDb_Package.REMOVING = 'removing';
 	LocalDb_Package.REMOVE_FAILED = 'remove-failed';
 
+	LocalDb_Package.LAUNCHING = 'launching';
+	LocalDb_Package.RUNNING = 'running';
+
 	LocalDb_Package.fromPackageInfo = function( _package, release, build, launchOptions )
 	{
 		var packageData = _.pick( _package, [
@@ -175,7 +178,9 @@ angular.module( 'App.Client.LocalDb' )
 
 	LocalDb_Package.prototype.isRunning = function()
 	{
-		return !!this.running_pid;
+		return this.run_state
+			|| !!this.running_pid
+			;
 	};
 
 	LocalDb_Package.prototype.isRemoving = function()
@@ -253,14 +258,22 @@ angular.module( 'App.Client.LocalDb' )
 		return this.$save();
 	};
 
+	LocalDb_Package.prototype.$setLaunching = function()
+	{
+		this.run_state = LocalDb_Package.LAUNCHING;
+		return this.$save;
+	};
+
 	LocalDb_Package.prototype.$setRunningPid = function( pid )
 	{
+		this.run_state = LocalDb_Package.RUNNING;
 		this.running_pid = pid;
 		return this.$save();
 	};
 
 	LocalDb_Package.prototype.$clearRunningPid = function()
 	{
+		delete this.run_state;
 		delete this.running_pid;
 		return this.$save();
 	};
@@ -300,7 +313,7 @@ angular.module( 'App.Client.LocalDb' )
 			} );
 	};
 
-	LocalDb_Package.prototype.$uninstall = function()
+	LocalDb_Package.prototype.$uninstall = function( dbOnly )
 	{
 		var _this = this;
 		var game;
@@ -317,11 +330,15 @@ angular.module( 'App.Client.LocalDb' )
 			// Are we removing a current install?
 			var wasInstalling = _this.isInstalling();
 
+			// If uninstalling has to interrupt a patch operation that is curerntly in progress.
+			var isCurrentlyPatching = false;
+
 			// Cancel any installs first.
 			// It may or may not be patching.
 			return Client_Installer.cancel( _this )
-				.then( function()
+				.then( function( _isCurrentlyPatching )
 				{
+					isCurrentlyPatching = _isCurrentlyPatching;
 					return LocalDb_Game.fetch( _this.game_id );
 				} )
 				.then( function( _game )
@@ -339,6 +356,17 @@ angular.module( 'App.Client.LocalDb' )
 				} )
 				.then( function()
 				{
+					// Skip removing the package if we don't want to actually uninstall from disk.
+					if ( dbOnly ) {
+						return;
+					}
+
+					// Skip if we were interrupting a patch operation of a first installation.
+					// This is because the package will automatically be removed from disk by the patch instance.
+					if ( isCurrentlyPatching && wasInstalling ) {
+						return;
+					}
+
 					return $injector.get( 'Client_Library' ).removePackage( _this );
 				} )
 				.then( function()

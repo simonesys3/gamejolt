@@ -144,22 +144,6 @@ angular.module( 'App.Client.Library' )
 
 	this.removePackage = function( package_ )
 	{
-		var Uninstaller = require( 'client-voodoo' ).Uninstaller;
-
-		return $q( function( resolve, reject )
-		{
-			Uninstaller.uninstall( package_ )
-				.then( function( uninstallInstance )
-				{
-					uninstallInstance
-						.on( 'state', function( state )
-						{
-							if ( state === 2 ) {
-								resolve();
-							}
-						} )
-						.on( 'fatal', reject );
-				} );
-		} );
+		return $injector.get( 'Client_Installer' ).uninstall( package_ );
 	};
 } );

@@ -20,10 +20,10 @@
 	<p class="client-install-progress-info small clearfix">
 		<span class="pull-left client-install-progress-info-speed" ng-if="ctrl.shouldShowSpeed">
 			Speed:
-			<strong ng-if="ctrl.localPackage[ ctrl.progressKey ].sample">
-				{{ ctrl.localPackage[ ctrl.progressKey ].sample.currentAverage.toFixed( 0 ) }} KBps
+			<strong ng-if="ctrl.localPackage[ ctrl.progressKey ].rate">
+				{{ ctrl.localPackage[ ctrl.progressKey ].rate.toFixed( 0 ) }} KBps
 			</strong>
-			<strong ng-if="!ctrl.localPackage[ ctrl.progressKey ].sample">
+			<strong ng-if="!ctrl.localPackage[ ctrl.progressKey ].rate">
 				--
 			</strong>
 		</span>

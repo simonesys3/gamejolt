@@ -54,33 +54,39 @@ angular.module( 'App.Client.Installer' )
 
 	this.getPackagePatchProgress = function( packageId )
 	{
+		var _package = Client_Library.packages[ packageId ];
+		if ( !_package ) {
+			return null;
+		}
+
 		if ( Client_Library.packages[ packageId ].download_progress ) {
 			return Client_Library.packages[ packageId ].download_progress.progress;
 		}
 		else if ( Client_Library.packages[ packageId ].unpack_progress ) {
 			return Client_Library.packages[ packageId ].unpack_progress.progress;
 		}
+
 		return null;
 	};
 
 	this.checkQueueSettings = function()
 	{
-		// var Queue = require( 'client-voodoo' ).VoodooQueue;
+		var Queue = require( 'client-voodoo' ).Queue;
 
-		// Queue.faster = {
-		// 	downloads: Settings.get( 'max-download-count' ),
-		// 	extractions: Settings.get( 'max-extract-count' ),
-		// };
+		Queue.faster = {
+			downloads: Settings.get( 'max-download-count' ),
+			extractions: Settings.get( 'max-extract-count' ),
+		};
 
-		// if ( Settings.get( 'queue-when-playing' ) ) {
-		// 	Queue.slower = {
-		// 		downloads: 0,
-		// 		extractions: 0,
-		// 	};
-		// }
-		// else {
-		// 	Queue.slower = Queue.faster;
-		// }
+		if ( Settings.get( 'queue-when-playing' ) ) {
+			Queue.slower = {
+				downloads: 0,
+				extractions: 0,
+			};
+		}
+		else {
+			Queue.slower = Queue.faster;
+		}
 	};
 
 	this.retryInstall = function( localPackage )
@@ -194,72 +200,109 @@ angular.module( 'App.Client.Installer' )
 											localPackage.$setUpdateState( LocalDb_Package.UNPACKING );
 										}
 									} );
-
-								// Finished.
-								case 4:
-									return resolve();
 							}
 						} )
-						// .onProgress( 1, function( progress )
-						// {
-						// 	$rootScope.$apply( function()
-						// 	{
-						// 		localPackage.download_progress = progress;
-						// 		localPackage.$save();
-						// 	} );
-						// } )
-						// .onExtractProgress( 1, function( progress )
-						// {
-						// 	$rootScope.$apply( function()
-						// 	{
-						// 		localPackage.unpack_progress = progress;
-						// 		localPackage.$save();
-						// 	} );
-						// } )
-						// .onPaused( function( wasQueued )
-						// {
-						// 	$rootScope.$apply( function()
-						// 	{
-						// 		if ( wasQueued ) {
-						// 			localPackage.$setPatchQueued();
-						// 		}
-						// 		else {
-						// 			localPackage.$setPatchPaused()
-						// 		}
-						// 	} );
-						// } )
-						// .onResumed( function( wasInQueue )
-						// {
-						// 	$rootScope.$apply( function()
-						// 	{
-						// 		if ( wasInQueue ) {
-						// 			localPackage.$setPatchUnqueued();
-						// 		}
-						// 		else {
-						// 			localPackage.$setPatchResumed()
-						// 		}
-						// 	} );
-						// } )
-						// .start();
+						.on( 'progress', function( progress )
+						{
+							var progressType = progress.type;
+
+							progress = {
+								// Newer version of client voodoo return progress as an integer between 0-100,
+								// but old client-voodoo returned a float between 0-1.
+								// To maintain compatibility, make this function return the float always.
+								progress: progress.percent / 100,
+
+								timeLeft: Math.round( ( progress.total - progress.current ) / progress.sample.movingAverage ),
+
+								// divide by 1024 to convert to kbps
+								rate: Math.round( progress.sample.movingAverage / 1024 ),
+							};
+
+							$rootScope.$apply( function()
+							{
+								if ( progressType == 'download' ) {
+									localPackage.download_progress = progress;
+								}
+								else {
+									localPackage.unpack_progress = progress;
+								}
+								localPackage.$save();
+							} );
+						} )
+						.on( 'paused', function( queued )
+						{
+							console.log( 'Pause received in gamejolt repo. From queue: ' + ( queued ? 'yes' : 'no' ) );
+
+							$rootScope.$apply( function()
+							{
+								if ( queued ) {
+									localPackage.$setPatchQueued();
+								}
+								else {
+									localPackage.$setPatchPaused();
+								}
+							} );
+						} )
+						.on( 'resumed', function( unqueued )
+						{
+							console.log( 'Resume received in gamejolt repo. From queue: ' + ( unqueued ? 'yes' : 'no' ) );
+
+							$rootScope.$apply( function()
+							{
+								if ( unqueued ) {
+									localPackage.$setPatchUnqueued();
+								}
+								else {
+									localPackage.$setPatchResumed();
+								}
+							} );
+						} )
+						.on( 'updateFailed', function( reason )
+						{
+							// If the update was canceled the 'context canceled' will be emitted as the updateFailed reason.
+							if ( reason == 'context canceled' ) {
+								return resolve( true );
+							}
+							reject( new Error( reason ) );
+						} )
+						.on( 'updateFinished', function()
+						{
+							resolve( false );
+						} )
 						.on( 'fatal', reject );
 				} );
 			} )
-			.then( function()
+			.then( function( canceled )
 			{
 				_this._stopPatching( localPackage );
 
-				if ( localPackage.install_state ) {
-					return localPackage.$setInstalled();
+				if ( !canceled ) {
+					var installPromise = $q.resolve();
+					if ( localPackage.install_state ) {
+						installPromise = localPackage.$setInstalled();
+					}
+					else if ( localPackage.update_state ) {
+						installPromise = localPackage.$setUpdated();
+					}
+
+					return installPromise
+						.then( function()
+						{
+							var action = operation == 'install' ? 'finished installing' : 'updated to the latest version';
+							var title = operation == 'install' ? 'Game Installed' : 'Game Updated';
+							Growls.add( 'success', packageTitle + ' has ' + action + '.', title );
+						} );
 				}
-				else if ( localPackage.update_state ) {
-					return localPackage.$setUpdated();
+				else {
+					// If we were cancelling the first installation - we have to treat the package as uninstalled.
+					if ( localPackage.install_state ) {
+
+						// Calling $uninstall normally attempts to spawn a client voodoo uninstall instance.
+						// Override that because the uninstallation should be done automatically by the installation process.
+						return localPackage.$uninstall( true );
+					}
 				}
-			} )
-			.then( function()
-			{
-				var action = operation == 'install' ? 'finished installing' : 'updated to the latest version';
-				var title = operation == 'install' ? 'Game Installed' : 'Game Updated';
-				Growls.add( 'success', packageTitle + ' has ' + action + '.', title );
+
 			} )
 			.catch( function( err )
 			{
@@ -284,6 +327,27 @@ angular.module( 'App.Client.Installer' )
 
 				_this._stopPatching( localPackage );
 			} );
+	};
+
+	this.uninstall = function( localPackage )
+	{
+		var Uninstaller = require( 'client-voodoo' ).Uninstaller;
+
+		return $q( function( resolve, reject )
+		{
+			Uninstaller.uninstall( localPackage )
+				.then( function( uninstallInstance )
+				{
+					uninstallInstance
+						.on( 'state', function( state )
+						{
+							if ( state === 2 ) {
+								resolve();
+							}
+						} )
+						.on( 'fatal', reject );
+				} );
+		} );
 	};
 
 	this._startPatching = function( localPackage, patchInstance )
@@ -327,13 +391,10 @@ angular.module( 'App.Client.Installer' )
 	{
 		var patchInstance = _this.currentlyPatching[ localPackage.id ];
 		if ( !patchInstance ) {
-			return $q.resolve();
+			return $q.resolve( false );
 		}
 
-		return $q.when( patchInstance.cancel() )
-			.then( function()
-			{
-				_this._stopPatching( localPackage );
-			} );
+		return patchInstance.cancel()
+			.then( function() { return true } );
 	};
 } );

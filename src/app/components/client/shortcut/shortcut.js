@@ -6,7 +6,7 @@ angular.module( 'App.Client.Shortcut', [] ).run( function( Environment, Device )
 		return;
 	}
 
-	// var path = require( 'path' );
-	// var Shortcut = require( 'client-voodoo' ).Shortcut;
-	// Shortcut.create( process.execPath, path.resolve( 'package/app/img/client/icon-256x256.png' ) );
+	var path = require( 'path' );
+	var Shortcut = require( 'client-voodoo' ).Shortcut;
+	Shortcut.create( process.execPath, path.resolve( 'package/app/img/client/icon-256x256.png' ) );
 } );

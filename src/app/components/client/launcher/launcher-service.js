@@ -32,7 +32,11 @@ angular.module( 'App.Client.Launcher' )
 		var os = Device.os();
 		var arch = Device.arch();
 
-		return $q.when( Api.sendRequest( '/web/dash/token/get-for-game', { game_id: localPackage.game_id } ) )
+		return $q.when( localPackage.$setLaunching() )
+			.then( function()
+			{
+				return Api.sendRequest( '/web/dash/token/get-for-game', { game_id: localPackage.game_id } );
+			} )
 			.catch( function( e )
 			{
 				console.log( 'Could not get game token to launch with - launching anyways' );
@@ -46,7 +50,7 @@ angular.module( 'App.Client.Launcher' )
 					: null;
 
 				// return Launcher.launch( localPackage, os, arch, credentials ).promise;
-				return Launcher.launch( localPackage );
+				return Launcher.launch( localPackage, credentials );
 			} )
 			.then( function( launchInstance )
 			{
