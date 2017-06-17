@@ -169,6 +169,9 @@ angular.module( 'App.Client.Installer' )
 				{
 					_this._startPatching( localPackage, patchInstance );
 
+					// reject(new Error( 'blah' ));
+					// return;
+
 					patchInstance
 						.on( 'state', function( state )
 						{
@@ -312,17 +315,21 @@ angular.module( 'App.Client.Installer' )
 				var title = operation == 'install' ? 'Installation Failed' : 'Update Failed';
 				Growls.add( 'error', packageTitle + ' failed to ' + action + '.', title );
 
-				if ( localPackage.install_state == LocalDb_Package.DOWNLOADING ) {
-					localPackage.$setInstallState( LocalDb_Package.DOWNLOAD_FAILED );
+				if ( localPackage.install_state ) {
+					if ( localPackage.install_state == LocalDb_Package.UNPACKING ) {
+						localPackage.$setInstallState( LocalDb_Package.UNPACK_FAILED );
+					}
+					else {
+						localPackage.$setInstallState( LocalDb_Package.DOWNLOAD_FAILED );
+					}
 				}
-				else if ( localPackage.install_state == LocalDb_Package.UNPACKING ) {
-					localPackage.$setInstallState( LocalDb_Package.UNPACK_FAILED );
-				}
-				else if ( localPackage.update_state == LocalDb_Package.DOWNLOADING ) {
-					localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
-				}
-				else if ( localPackage.update_state == LocalDb_Package.UNPACKING ) {
-					localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
+				else if ( localPackage.update_state ) {
+					if ( localPackage.update_state == LocalDb_Package.UNPACKING ) {
+						localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
+					}
+					else {
+						localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
+					}
 				}
 
 				_this._stopPatching( localPackage );
