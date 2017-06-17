@@ -164,7 +164,7 @@ angular.module( 'App.Client.Installer' )
 			promise = promise.then( function()
 			{
 				return localPackage.$setPatchResumed();
-			} );install
+			} );
 		}
 
 		var operation = localPackage.install_state ? 'install' : 'update';
