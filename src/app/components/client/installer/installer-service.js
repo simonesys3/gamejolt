@@ -169,9 +169,6 @@ angular.module( 'App.Client.Installer' )
 				{
 					_this._startPatching( localPackage, patchInstance );
 
-					// reject(new Error( 'blah' ));
-					// return;
-
 					patchInstance
 						.on( 'state', function( state )
 						{
