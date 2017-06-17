@@ -6,7 +6,7 @@ angular.module( 'App.Client.Installer' )
 		Client_Installer.init();
 	} );
 } )
-.service( 'Client_Installer', function( $q, $rootScope, Client, Client_Library, Settings, LocalDb, LocalDb_Package, Growls )
+.service( 'Client_Installer', function( $q, $rootScope, Api, Client, Client_Library, Settings, LocalDb, LocalDb_Package, Growls )
 {
 	var _this = this;
 
@@ -125,7 +125,24 @@ angular.module( 'App.Client.Installer' )
 
 	this.install = function( game, localPackage )
 	{
-		var promise = $q.resolve();
+		var authToken;
+
+		var promise = Api.sendRequest( '/updater/get-access-token/' + localPackage.id, null, { apiPath: '/x', processPayload: false, detach: true } )
+			.then( function( result )
+			{
+				if ( !result || !result.data || !result.data.token ) {
+					return $q.reject( new Error( 'Result is empty' ) );
+				}
+
+				authToken = result.data.token;
+			} )
+			.catch( function( e )
+			{
+				console.log( 'Could not get access token for package ' + localPackage.id );
+				console.error( e );
+				authToken = '';
+			} );
+
 
 		// We freeze the installation directory in time.
 		if ( !localPackage.install_dir ) {
@@ -147,7 +164,7 @@ angular.module( 'App.Client.Installer' )
 			promise = promise.then( function()
 			{
 				return localPackage.$setPatchResumed();
-			} );
+			} );install
 		}
 
 		var operation = localPackage.install_state ? 'install' : 'update';
@@ -161,7 +178,7 @@ angular.module( 'App.Client.Installer' )
 			.then( function()
 			{
 				var Patcher = require( 'client-voodoo' ).Patcher;
-				return Patcher.patch( localPackage );
+				return Patcher.patch( localPackage, { authToken: authToken } );
 			} )
 			.then( function( patchInstance )
 			{
@@ -307,25 +324,24 @@ angular.module( 'App.Client.Installer' )
 			.catch( function( err )
 			{
 				console.error( err );
+				_this._stopPatching( localPackage );
 
 				var action = operation == 'install' ? 'install' : 'update';
 				var title = operation == 'install' ? 'Installation Failed' : 'Update Failed';
 				Growls.add( 'error', packageTitle + ' failed to ' + action + '.', title );
 
 				if ( localPackage.install_state == LocalDb_Package.DOWNLOADING ) {
-					localPackage.$setInstallState( LocalDb_Package.DOWNLOAD_FAILED );
+					return localPackage.$setInstallState( LocalDb_Package.DOWNLOAD_FAILED );
 				}
 				else if ( localPackage.install_state == LocalDb_Package.UNPACKING ) {
-					localPackage.$setInstallState( LocalDb_Package.UNPACK_FAILED );
+					return localPackage.$setInstallState( LocalDb_Package.UNPACK_FAILED );
 				}
 				else if ( localPackage.update_state == LocalDb_Package.DOWNLOADING ) {
-					localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
+					return localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
 				}
 				else if ( localPackage.update_state == LocalDb_Package.UNPACKING ) {
-					localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
+					return localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
 				}
-
-				_this._stopPatching( localPackage );
 			} );
 	};
 
