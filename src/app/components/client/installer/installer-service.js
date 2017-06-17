@@ -178,7 +178,7 @@ angular.module( 'App.Client.Installer' )
 			.then( function()
 			{
 				var Patcher = require( 'client-voodoo' ).Patcher;
-				return Patcher.patch( localPackage/*, { authToken: authToken }*/ );
+				return Patcher.patch( localPackage, { authToken: authToken } );
 			} )
 			.then( function( patchInstance )
 			{
