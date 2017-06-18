@@ -135,14 +135,7 @@ angular.module( 'App.Client.Installer' )
 				}
 
 				authToken = result.data.token;
-			} )
-			.catch( function( e )
-			{
-				console.log( 'Could not get access token for package ' + localPackage.id );
-				console.error( e );
-				authToken = '';
 			} );
-
 
 		// We freeze the installation directory in time.
 		if ( !localPackage.install_dir ) {
