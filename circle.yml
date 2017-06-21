@@ -4,6 +4,11 @@ machine:
   environment:
     NODE_TLS_REJECT_UNAUTHORIZED: 0
 
+general:
+  artifacts:
+    - "build/client/prod/build/linux64-package.tar.gz"
+    - "build/client/prod/build/linux64.tar.gz"
+
 checkout:
   post:
     - git submodule sync
