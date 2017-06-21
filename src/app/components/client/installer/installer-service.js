@@ -123,24 +123,32 @@ angular.module( 'App.Client.Installer' )
 		} );
 	};
 
-	this.install = function( game, localPackage )
+	this._getAccessToken = function( localPackage )
 	{
-		var authToken;
-
-		var promise = Api.sendRequest( '/updater/get-access-token/' + localPackage.id, null, { apiPath: '/x', processPayload: false, detach: true } )
+		return Api.sendRequest( '/updater/get-access-token/' + localPackage.id, null, { apiPath: '/x', processPayload: false, detach: true } )
 			.then( function( result )
 			{
 				if ( !result || !result.data || !result.data.token ) {
-					return $q.reject( new Error( 'Result is empty' ) );
+					throw new Error( 'Result is empty' );
 				}
 
-				authToken = result.data.token;
+				return result.data.token;
 			} )
+	};
+
+	this.install = function( game, localPackage )
+	{
+		var authToken;
+		var promise = this._getAccessToken( localPackage )
 			.catch( function( e )
 			{
 				console.log( 'Could not get access token for package ' + localPackage.id );
 				console.error( e );
-				authToken = '';
+				return '';
+			} )
+			.then( function( _authToken )
+			{
+				authToken = _authToken;
 			} );
 
 
@@ -286,7 +294,11 @@ angular.module( 'App.Client.Installer' )
 						{
 							resolve( false );
 						} )
-						.on( 'fatal', reject );
+						.on( 'fatal', function( err )
+						{
+							console.log( 'Received fatal error in patcher in gamejolt repo: ' + err.message );
+							reject( err );
+						} );
 				} );
 			} )
 			.then( function( canceled )
@@ -311,8 +323,13 @@ angular.module( 'App.Client.Installer' )
 						} );
 				}
 				else {
+					console.log( 'Canceling installation' );
+					console.log( localPackage );
+					console.log( localPackage.install_state );
+
 					// If we were cancelling the first installation - we have to treat the package as uninstalled.
-					if ( localPackage.install_state ) {
+					if ( operation === 'install' ) {
+						console.log( 'Canceled a first installation, Marking as uninstalled from db' );
 
 						// Calling $uninstall normally attempts to spawn a client voodoo uninstall instance.
 						// Override that because the uninstallation should be done automatically by the installation process.
@@ -405,7 +422,17 @@ angular.module( 'App.Client.Installer' )
 			return this.retryInstall( localPackage );
 		}
 
-		return patchInstance.resume();
+		return this._getAccessToken( localPackage )
+			.catch( function( e )
+			{
+				console.log( 'Could not get access token for package ' + localPackage.id );
+				console.error( e );
+				return '';
+			} )
+			.then( function( authToken )
+			{
+				return patchInstance.resume( { authToken: authToken } );
+			} );
 	};
 
 	this.cancel = function( localPackage )
