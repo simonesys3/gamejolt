@@ -6,14 +6,6 @@ os:
   - osx
 
 addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - gcc-4.9
-      - g++-4.9
-      - gcc-4.9-multilib
-      - g++-4.9-multilib
   artifacts:
     paths:
       - ./build/client/prod/build/linux64-package.tar.gz
@@ -22,7 +14,7 @@ addons:
       - ./build/client/prod/build/osx.dmg
 
 env:
-- NODE_TLS_REJECT_UNAUTHORIZED=0
+  - NODE_TLS_REJECT_UNAUTHORIZED=0
 
 before_install:
   - git submodule update --init --recursive
@@ -30,16 +22,13 @@ before_install:
   - source ./.nvm/nvm.sh
   - nvm install 6.9.0
   - nvm use 6.9.0
-  - $CXX --version
-  - npm install -g gulp-cli bower node-pre-gyp nw-gyp
+  - npm install -g gulp-cli bower
 
 install:
   - bower i
   - npm i
-  - rm -rf node_modules/nan
-  - npm i nan@2.3.2
 
 script:
   - echo $TRAVIS_OS_NAME
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then export CXX=g++-4.9; $CXX --version; npm run client-build-linux64; fi
+  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then npm run client-build-linux64; fi
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then npm run client-build-osx; fi

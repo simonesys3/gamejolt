@@ -31,38 +31,6 @@ module.exports = function( config )
 			throw new Error( 'Can not build client on your OS type.' );
 	}
 
-	// On Windows builds we have to use npm3. For other OSes it's faster to do npm2.
-	// npm3 does a flat directory structure in node_modules, so the path is different.
-	// We have to find where the lzma-native path is so we can compile it.
-	var lzmaPath = path.join( 'node_modules', 'lzma-native' );
-	try {
-		// Will throw if no path exists.
-		fs.statSync( path.resolve( lzmaPath ) );
-	}
-	catch ( e ) {
-		lzmaPath = path.join( 'node_modules', 'client-voodoo', 'node_modules', 'lzma-native' );
-	}
-
-	var windowsMutexPath = path.join( 'node_modules', 'windows-mutex' );
-	if ( config.platform === 'win' ) {
-		try {
-			// Will throw if no path exists.
-			fs.statSync( path.resolve( windowsMutexPath ) );
-		}
-		catch ( e ) {
-			windowsMutexPath = path.join( 'node_modules', 'client-voodoo', 'node_modules', 'windows-mutex' );
-		}
-	}
-
-	var gypTasks = [
-		'cd ' + path.resolve( lzmaPath ) + ' && node-pre-gyp clean configure build --runtime=node-webkit --target=0.12.3 --target_arch=' + config.gypArch,
-	];
-	if ( config.platform == 'win' ) {
-		gypTasks.push( 'cd ' + path.resolve( windowsMutexPath ) + ' && nw-gyp clean configure build --target=0.12.3 --arch=' + config.gypArch );
-	}
-
-	gulp.task( 'client:gyp', shell.task( gypTasks ) );
-
 	// For releasing to S3.
 	// We have to gather all the builds into the versioned folder before pushing.
 	var releaseDir = path.join( 'build/client/prod', 'v' + packageJson.version );
@@ -197,17 +165,7 @@ module.exports = function( config )
 
 	var nodeModuletasks = [
 		'cd ' + config.buildDir + ' && npm install --production',
-		config.platform == 'win' ? 'rmdir /S /Q node_modules\\nan' : 'rm -rf node_modules/nan',
-		'npm install nan@2.3.2',
-		'cd ' + path.resolve( config.buildDir, lzmaPath ) + ' && node-pre-gyp clean configure build --runtime=node-webkit --target=0.12.3 --target_arch=' + config.gypArch,
 	];
-
-	// http://developers.ironsrc.com/rename-import-dll/
-	if ( config.platform == 'win' ) {
-		nodeModuletasks.push( 'cd ' + path.resolve( config.buildDir, windowsMutexPath ) + ' && nw-gyp clean configure build --target=0.12.3 --arch=' + config.gypArch );
-		nodeModuletasks.push( path.resolve( 'tasks/rid.exe' ) + ' ' + path.resolve( config.buildDir, lzmaPath, 'binding/lzma_native.node' ) + ' nw.exe GameJoltClient.exe' );
-		nodeModuletasks.push( path.resolve( 'tasks/rid.exe' ) + ' ' + path.resolve( config.buildDir, windowsMutexPath, 'build/Release/CreateMutex.node' ) + ' nw.exe GameJoltClient.exe' );
-	}
 
 	gulp.task( 'client:node-modules', shell.task( nodeModuletasks ) );
 

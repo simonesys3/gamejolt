@@ -6,7 +6,7 @@ environment:
 
 install:
   - ps: Install-Product node 6.9.0 x86 # We need npm@3 for windows builds
-  - npm install -g gulp-cli bower node-pre-gyp nw-gyp@0.12.3
+  - npm install -g gulp-cli bower
   - git submodule update --init --recursive
   - choco install -y InnoSetup
   - set PATH="C:\Program Files (x86)\Inno Setup 5";%PATH%
@@ -15,8 +15,6 @@ build_script:
   - bower i
   - SET CL=-DDELAYIMP_INSECURE_WRITABLE_HOOKS
   - npm i
-  - rmdir /S /Q node_modules\nan
-  - npm i nan@2.3.2
   - npm run client-build-win
 
 artifacts:
