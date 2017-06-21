@@ -151,7 +151,6 @@ angular.module( 'App.Client.Installer' )
 				authToken = _authToken;
 			} );
 
-
 		// We freeze the installation directory in time.
 		if ( !localPackage.install_dir ) {
 			var path = require( 'path' );
