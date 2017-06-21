@@ -1,13 +1,11 @@
 machine:
-  node:
-    version: 6.9.0
   environment:
     NODE_TLS_REJECT_UNAUTHORIZED: 0
 
 general:
   artifacts:
-    - "build/client/prod/build/linux64-package.tar.gz"
-    - "build/client/prod/build/linux64.tar.gz"
+    - "build/client/prod/build/osx64-package.tar.gz"
+    - "build/client/prod/build/osx.dmg"
 
 checkout:
   post:
@@ -22,4 +20,4 @@ dependencies:
 
 compile:
   override:
-    - npm run client-build-linux64
+    - npm run client-build-osx
