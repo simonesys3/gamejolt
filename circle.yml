@@ -1,0 +1,20 @@
+machine:
+  node:
+    version: 6.9.0
+  environment:
+    NODE_TLS_REJECT_UNAUTHORIZED: 0
+
+checkout:
+  post:
+    - git submodule sync
+    - git submodule update --init --recursive
+
+dependencies:
+  override:
+    - npm i -g gulp-cli bower
+    - npm i
+    - bower i
+
+compile:
+  override:
+    - npm run client-build-linux64
