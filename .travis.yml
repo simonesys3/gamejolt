@@ -2,15 +2,12 @@ sudo: false
 
 os:
   - linux
-  - osx
 
 addons:
   artifacts:
     paths:
       - ./build/client/prod/build/linux64-package.tar.gz
       - ./build/client/prod/build/linux64.tar.gz
-      - ./build/client/prod/build/osx64-package.tar.gz
-      - ./build/client/prod/build/osx.dmg
 
 env:
   - NODE_TLS_REJECT_UNAUTHORIZED=0
@@ -28,6 +25,4 @@ install:
   - npm i
 
 script:
-  - echo $TRAVIS_OS_NAME
-  - if [ "$TRAVIS_OS_NAME" == "linux" ]; then npm run client-build-linux64; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then npm run client-build-osx; fi
+  - npm run client-build-linux64
