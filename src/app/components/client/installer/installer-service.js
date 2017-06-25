@@ -140,9 +140,10 @@ angular.module( 'App.Client.Installer' )
 	{
 		var authToken;
 		var packageId = localPackage.id;
+		var _this = this;
 		var authTokenGetter = function()
 		{
-			return this._getAccessToken( packageId );
+			return _this._getAccessToken( packageId );
 		};
 
 		var promise = authTokenGetter()
