@@ -258,6 +258,19 @@ angular.module( 'App.Client.LocalDb' )
 		return this.$save();
 	};
 
+	LocalDb_Package.prototype.$setUpdateAborted = function()
+	{
+		// Remove any stuff only needed while updating.
+		delete this.update;
+		delete this.update_state;
+		delete this.download_progress;
+		delete this.unpack_progress;
+		delete this.patch_paused;
+		delete this.patch_queued;
+
+		return this.$save();
+	}
+
 	LocalDb_Package.prototype.$setLaunching = function()
 	{
 		this.run_state = LocalDb_Package.LAUNCHING;
@@ -330,15 +343,25 @@ angular.module( 'App.Client.LocalDb' )
 			// Are we removing a current install?
 			var wasInstalling = _this.isInstalling();
 
-			// If uninstalling has to interrupt a patch operation that is curerntly in progress.
-			var isCurrentlyPatching = false;
+			// Used to abort the promise chain in the middle.
+			var abortAll = false;
 
 			// Cancel any installs first.
 			// It may or may not be patching.
 			return Client_Installer.cancel( _this )
-				.then( function( _isCurrentlyPatching )
+				.then( function( isCurrentlyPatching )
 				{
-					isCurrentlyPatching = _isCurrentlyPatching;
+					// If uninstalling has to interrupt a patch operation that is curerntly in progress
+					// we abort the uninstall promise because it'll be called again from the client installer's promise chain.
+					// We need to make sure the uninstall promise doesn't exist by then.
+					// TODO: This is a horrible hack we're going to put up with until the overhaul in the vue codebase.
+					// Get rid of this asap, this flow is ridiculous
+					if ( isCurrentlyPatching ) {
+						abortAll = true;
+						_this._uninstallingPromise = null;
+						throw new Exception( "The package uninstall promise chain is aborted. If this was thrown, aborting was not handled correctly." );
+					}
+
 					return LocalDb_Game.fetch( _this.game_id );
 				} )
 				.then( function( _game )
@@ -358,12 +381,6 @@ angular.module( 'App.Client.LocalDb' )
 				{
 					// Skip removing the package if we don't want to actually uninstall from disk.
 					if ( dbOnly ) {
-						return;
-					}
-
-					// Skip if we were interrupting a patch operation of a first installation.
-					// This is because the package will automatically be removed from disk by the patch instance.
-					if ( isCurrentlyPatching && wasInstalling ) {
 						return;
 					}
 
@@ -399,6 +416,10 @@ angular.module( 'App.Client.LocalDb' )
 				} )
 				.catch( function( err )
 				{
+					if ( abortAll ) {
+						return;
+					}
+
 					console.error( err );
 
 					if ( wasInstalling ) {

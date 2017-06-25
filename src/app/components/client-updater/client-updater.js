@@ -5,7 +5,7 @@
 {
 	var Updater = require( 'nwjs-snappy-updater' ).Updater;
 	var path = require( 'path' );
-	// var Application = require( 'client-voodoo' ).Application;
+	var Application = require( 'client-voodoo' ).Config;
 
 	var CHECK_ENDPOINT = 'http://d.gamejolt.net/data/client/manifest-2.json';
 	var CHECK_INTERVAL = 15 * 60 * 1000; // 15min currently
@@ -60,14 +60,18 @@
 
 				// If we're on windows, we need to make sure to release the mutex we have on it.
 				// This is so we can clean up the node_modules folder without the mutex binding being in use by the fs.
-				if ( process.platform === 'win32' ) {
-					try {
-						// Application.stop();
-					}
-					catch ( err ) {}
-				}
-
-				return updater.update()
+				return Application.releaseClientMutex()
+					.catch( function( err )
+					{
+						// We should never fail here, we don't want to risk aborting an update because mutex isn't released correctly.
+						// This ensures that even if theres a problem with the mutex we'll at least start fetching the next update.
+						console.error( err );
+						return;
+					} )
+					.then( function()
+					{
+						return updater.update();
+					} )
 					.then( function( wasUpdated )
 					{
 						if ( !wasUpdated ) {

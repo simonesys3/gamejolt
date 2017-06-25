@@ -123,9 +123,9 @@ angular.module( 'App.Client.Installer' )
 		} );
 	};
 
-	this._getAccessToken = function( localPackage )
+	this._getAccessToken = function( packageId )
 	{
-		return Api.sendRequest( '/updater/get-access-token/' + localPackage.id, null, { apiPath: '/x', processPayload: false, detach: true } )
+		return Api.sendRequest( '/updater/get-access-token/' + packageId, null, { apiPath: '/x', processPayload: false, detach: true } )
 			.then( function( result )
 			{
 				if ( !result || !result.data || !result.data.token ) {
@@ -139,7 +139,13 @@ angular.module( 'App.Client.Installer' )
 	this.install = function( game, localPackage )
 	{
 		var authToken;
-		var promise = this._getAccessToken( localPackage )
+		var packageId = localPackage.id;
+		var authTokenGetter = function()
+		{
+			return this._getAccessToken( packageId );
+		};
+
+		var promise = authTokenGetter()
 			.catch( function( e )
 			{
 				console.log( 'Could not get access token for package ' + localPackage.id );
@@ -185,7 +191,7 @@ angular.module( 'App.Client.Installer' )
 			.then( function()
 			{
 				var Patcher = require( 'client-voodoo' ).Patcher;
-				return Patcher.patch( localPackage, { authToken: authToken } );
+				return Patcher.patch( localPackage, authTokenGetter, { authToken: authToken } );
 			} )
 			.then( function( patchInstance )
 			{
@@ -193,8 +199,18 @@ angular.module( 'App.Client.Installer' )
 				{
 					_this._startPatching( localPackage, patchInstance );
 
+					var listeners = {};
+					function cleanupListeners()
+					{
+						// Remove all listeners we bound to patch instance so it won't update the local package after the operation is done.
+						for ( var event in listeners ) {
+							patchInstance.removeListener( event, listeners[event] );
+						}
+						listeners = {};
+					}
+
 					patchInstance
-						.on( 'state', function( state )
+						.on( 'state', listeners['state'] = function( state )
 						{
 							switch ( state ) {
 
@@ -226,7 +242,7 @@ angular.module( 'App.Client.Installer' )
 									} );
 							}
 						} )
-						.on( 'progress', function( progress )
+						.on( 'progress', listeners['progress'] = function( progress )
 						{
 							var progressType = progress.type;
 
@@ -253,7 +269,7 @@ angular.module( 'App.Client.Installer' )
 								localPackage.$save();
 							} );
 						} )
-						.on( 'paused', function( queued )
+						.on( 'paused', listeners['paused'] = function( queued )
 						{
 							console.log( 'Pause received in gamejolt repo. From queue: ' + ( queued ? 'yes' : 'no' ) );
 
@@ -267,7 +283,7 @@ angular.module( 'App.Client.Installer' )
 								}
 							} );
 						} )
-						.on( 'resumed', function( unqueued )
+						.on( 'resumed', listeners['resumed'] = function( unqueued )
 						{
 							console.log( 'Resume received in gamejolt repo. From queue: ' + ( unqueued ? 'yes' : 'no' ) );
 
@@ -281,20 +297,25 @@ angular.module( 'App.Client.Installer' )
 								}
 							} );
 						} )
-						.on( 'updateFailed', function( reason )
+						.on( 'updateFailed', listeners['updateFailed'] = function( reason )
 						{
+							cleanupListeners();
+
 							// If the update was canceled the 'context canceled' will be emitted as the updateFailed reason.
 							if ( reason == 'context canceled' ) {
 								return resolve( true );
 							}
 							reject( new Error( reason ) );
 						} )
-						.on( 'updateFinished', function()
+						.on( 'updateFinished', listeners['updateFinished'] = function()
 						{
+							cleanupListeners();
 							resolve( false );
 						} )
-						.on( 'fatal', function( err )
+						.on( 'fatal', listeners['fatal'] = function( err )
 						{
+							cleanupListeners();
+
 							console.log( 'Received fatal error in patcher in gamejolt repo: ' + err.message );
 							reject( err );
 						} );
@@ -334,8 +355,49 @@ angular.module( 'App.Client.Installer' )
 						// Override that because the uninstallation should be done automatically by the installation process.
 						return localPackage.$uninstall( true );
 					}
+					else {
+						console.log( 'Canceled an update operation. Attempting to rollback.' );
+						var Rollbacker = require( 'client-voodoo' ).Rollbacker;
+						return $q( function( resolve, reject )
+						{
+							Rollbacker.rollback( localPackage )
+								.then( function( rollbackInstance )
+								{
+									rollbackInstance
+										.on( 'rollbackFailed', function( reason )
+										{
+											console.log( 'Received rollbackFailed in gamejolt: ' + reason );
+											reject( new Error( reason ) );
+										} )
+										.on( 'rollbackFinished', function()
+										{
+											console.log( 'Received rollbackFinished in gamejolt' );
+											resolve();
+										} )
+										.on( 'fatal', reject );
+								} )
+								.catch( reject );
+						} )
+						.then( function()
+						{
+							return localPackage.$setUpdateAborted();
+						} )
+						.then( function()
+						{
+							Growls.add( 'success', packageTitle + ' aborted the update.', 'Update Aborted' );
+						} )
+						.catch( function( err )
+						{
+							if ( localPackage.update_state == LocalDb_Package.UNPACKING ) {
+								localPackage.$setUpdateState( LocalDb_Package.UNPACK_FAILED );
+							}
+							else {
+								localPackage.$setUpdateState( LocalDb_Package.DOWNLOAD_FAILED );
+							}
+							Growls.add( 'error', packageTitle + ' cannot abort at this time. Retry or uninstall it.', 'Update Failed')
+						} );
+					}
 				}
-
 			} )
 			.catch( function( err )
 			{
@@ -421,7 +483,7 @@ angular.module( 'App.Client.Installer' )
 			return this.retryInstall( localPackage );
 		}
 
-		return this._getAccessToken( localPackage )
+		return this._getAccessToken( localPackage.id )
 			.catch( function( e )
 			{
 				console.log( 'Could not get access token for package ' + localPackage.id );
