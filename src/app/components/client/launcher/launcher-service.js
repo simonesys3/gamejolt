@@ -42,14 +42,15 @@ angular.module( 'App.Client.Launcher' )
 				// For all the packages that have a game pid file and aren't marked as running in the localdb - mark as running before attaching.
 				// This will mark them as runnig using the old client launcher's running format.
 				var markedAsRunning = [];
-				for ( var runningPackageId of runningPackageIds ) {
+				angular.forEach( runningPackageIds, function( runningPackageId )
+				{
 					var localPackage = Client_Library.packages[ runningPackageId ];
 					if ( localPackage && !localPackage.isRunning() ) {
 						markedAsRunning.push( localPackage.$setRunningPid( {
 							wrapperId: localPackage.id.toString(),
 						} ) );
 					}
-				}
+				} );
 
 				return $q.all( markedAsRunning );
 			} )
