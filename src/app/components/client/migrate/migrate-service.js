@@ -33,6 +33,7 @@ angular.module( 'App.Client.Migrate' ) .service( 'Client_Migrate', function(
 		var STAGE_INSTALL_DIR = 2;
 		var STAGE_DATA_PATH = 3;
 		var STAGE_ARCHIVE_FILE_LIST = 4;
+		var STAGE_PATCH_FILE_LIST = 5;
 
 		var basename = path.basename( item.install_dir );
 		var dirname = path.dirname( item.install_dir );
@@ -114,6 +115,36 @@ angular.module( 'App.Client.Migrate' ) .service( 'Client_Migrate', function(
 			);
 		}
 
+		// Pull the old patch file list file into the top level. It may not exist.
+		var exists = false;
+		try {
+			var stats = fs.lstatSync( path.join( newDataPath, '.gj-patch-file' ) );
+			exists = stats.isFile() && !stats.isSymbolicLink();
+		}
+		catch ( e ) {}
+
+		if ( exists ) {
+			fs.renameSync(
+				path.join( newDataPath, '.gj-patch-file' ),
+				path.join( item.install_dir, '.gj-patch-file' )
+			);
+		}
+
+		// Pull the temp download file into the top level. It may not exist.
+		exists = false;
+		try {
+			var stats = fs.lstatSync( path.join( newDataPath, '.gj-tempDownload' ) );
+			exists = stats.isFile() && !stats.isSymbolicLink();
+		}
+		catch ( e ) {}
+
+		if ( exists ) {
+			fs.renameSync(
+				path.join( newDataPath, '.gj-tempDownload' ),
+				path.join( item.install_dir, '.tempDownload' )
+			);
+		}
+
 		// It's fine to rebuild the manifest. No need for stage checks.
 		var fileList = fs.readFileSync( path.join( item.install_dir, '.gj-archive-file-list' ), 'utf8' );
 		var lines = fileList
@@ -122,16 +153,33 @@ angular.module( 'App.Client.Migrate' ) .service( 'Client_Migrate', function(
 			// Make sure that empty lines are discarded.
 			.filter( function( line ) { return !!line } );
 
-		var manifestData = generateManifest( item, lines );
+		// If the patch file exists in the top level, rebuild the manifest using it as the patch info dynamic files.
+		exists = false;
+		try {
+			var stats = fs.lstatSync( path.join( item.install_dir, '.gj-patch-file' ) );
+			exists = stats.isFile() && !stats.isSymbolicLink();
+		}
+		catch ( e ) {}
+
+		var patchLines = false;
+		if ( exists ) {
+			patchLines = fs.readFileSync( path.join( item.install_dir, '.gj-patch-file' ), 'utf8' )
+				.split( "\n" )
+				.map( function( line ) { return line.trim() } )
+				// Make sure that empty lines are discarded.
+				.filter( function( line ) { return !!line } );
+		}
+
+		var manifestData = generateManifest( item, lines, patchLines );
 
 		fs.writeFileSync( path.join( item.install_dir, '.manifest' ), JSON.stringify( manifestData ) );
 	};
 
-	function generateManifest( item, fileList )
+	function generateManifest( item, fileList, patchList )
 	{
 		var launchOption = findLaunchOption( item );
 
-		return {
+		var manifest = {
 			version: 1,
 			gameInfo: {
 				dir: 'data',
@@ -147,6 +195,22 @@ angular.module( 'App.Client.Migrate' ) .service( 'Client_Migrate', function(
 			arch: Device.arch(),
 			isFirstInstall: false,
 		};
+
+		if ( item.isUpdating() ) {
+			var patchInfo = {
+				dir: 'data',
+				uid: item.update.id + '-' + item.update.build.id,
+				isDirty: !!patchList,
+			};
+
+			if ( patchList ) {
+				patchInfo.dynamicFiles = patchList;
+			}
+
+			manifest.patchInfo = patchInfo;
+		}
+
+		return manifest;
 	}
 
 	function findLaunchOption( item )

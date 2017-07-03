@@ -4,6 +4,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 		$document,
 		$scope,
 		$q,
+		Client_Installer,
 		Client_Library,
 		Client_Launcher,
 		Client_Migrate
@@ -77,12 +78,19 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 
 			console.log( 'running packages', ctrl.runningPackages );
 
-			// TODO: Wait until packages are no longer running before proceeding to migrate.
-			// if ( ctrl.runningPackages ) {
+			var allGamesClosed = $q( function( resolve )
+			{
+				$scope.$watch( Client_Launcher.numGamesRunning,
+				function( numGames )
+				{
+					console.log( 'Number of running games: ' + numGames );
+					if ( !numGames ) {
+						resolve();
+					}
+				} );
+			} );
 
-			// }
-
-			migrate();
+			allGamesClosed.then( migrate );
 		}
 
 		function migrate()
@@ -95,6 +103,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 		{
 			if ( index >= ctrl.packagesToMigrate.length ) {
 				console.log( 'No more packages to migrate.' );
+				Client_Installer.retryAllInstalls();
 				return $q.resolve();
 			}
 
@@ -112,10 +121,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 			ctrl.currentPackage = ctrl.packagesToMigrate[ index ];
 			try {
 				Client_Migrate.migratePackage( ctrl.currentPackage );
-				setTimeout( function()
-				{
-					migratePackage( index + 1 ).then( resolve );
-				}, 3000 );
+				migratePackage( index + 1 ).then( resolve );
 			}
 			catch ( e ) {
 				ctrl.packageFailed = true;
@@ -156,7 +162,15 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 			var resolve = ctrl.currentPackageResolve;
 			var index = ctrl.currentIndex;
 
-			migratePackage( index + 1 ).then( resolve );
+			Client_Installer.uninstall( ctrl.currentPackage )
+				.then( function()
+				{
+					return migratePackage( index + 1 )
+						.then( resolve );
+				}, function( err )
+				{
+					ctrl.packageFailed = true;
+				} );
 		};
 
 		ctrl.progress = function()

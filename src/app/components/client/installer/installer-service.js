@@ -18,13 +18,7 @@ angular.module( 'App.Client.Installer' )
 		// Make sure we pull in the queue settings.
 		this.checkQueueSettings();
 
-		// This will retry to install anything that was installing before client was closed.
-		angular.forEach( Client_Library.packages, function( localPackage )
-		{
-			if ( localPackage.isPatching() && !localPackage.isPatchPaused() ) {
-				_this.retryInstall( localPackage );
-			}
-		} );
+		// TODO: call retryAllInstalls or always call it through the migrator?
 
 		// We set the system progress bar as we patch.
 		// Should be the accumulation of all current patches ongoing.
@@ -49,6 +43,17 @@ angular.module( 'App.Client.Installer' )
 			}
 
 			Client.setProgressBar( progress );
+		} );
+	};
+
+	this.retryAllInstalls = function()
+	{
+		// This will retry to install anything that was installing before client was closed.
+		angular.forEach( Client_Library.packages, function( localPackage )
+		{
+			if ( localPackage.isPatching() && !localPackage.isPatchPaused() ) {
+				_this.retryInstall( localPackage );
+			}
 		} );
 	};
 
