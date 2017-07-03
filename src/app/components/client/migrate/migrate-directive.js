@@ -14,6 +14,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 
 		ctrl.isClosed = false;
 		ctrl.packagesToMigrate = [];
+		ctrl.stage = 'running';
 		ctrl.runningPackages = [];
 		ctrl.currentPackage = undefined;
 		ctrl.currentIndex = 0;
@@ -96,6 +97,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 		function migrate()
 		{
 			console.log( 'Begin migration.' );
+			ctrl.stage = 'migrate';
 			migratePackage( 0 ).then( close );
 		}
 
