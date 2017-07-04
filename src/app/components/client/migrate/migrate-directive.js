@@ -81,11 +81,17 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 
 			var allGamesClosed = $q( function( resolve )
 			{
-				$scope.$watch( Client_Launcher.numGamesRunning,
-				function( numGames )
+				$scope.$watchCollection( Client_Launcher.getRunningPackageIds,
+				function( runningPackageIds )
 				{
-					console.log( 'Number of running games: ' + numGames );
-					if ( !numGames ) {
+					console.log( 'Number of running games: ' + runningPackageIds.length );
+					ctrl.runningPackages = ctrl.runningPackages.filter( function( item )
+					{
+						return runningPackageIds.indexOf( item.id ) !== -1;
+					} );
+
+					console.log( 'Number of running games to migrate: ' + runningPackageIds.length );
+					if ( !ctrl.runningPackages.length ) {
 						resolve();
 					}
 				} );

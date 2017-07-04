@@ -444,12 +444,11 @@ angular.module( 'App.Client.Installer' )
 				.then( function( uninstallInstance )
 				{
 					uninstallInstance
-						.on( 'state', function( state )
+						.on( 'uninstallFinished', function()
 						{
-							if ( state === 2 ) {
-								resolve();
-							}
+							resolve();
 						} )
+						.on( 'uninstallFailed', reject )
 						.on( 'fatal', reject );
 				} );
 		} );

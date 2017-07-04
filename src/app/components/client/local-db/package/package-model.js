@@ -430,6 +430,10 @@ angular.module( 'App.Client.LocalDb' )
 					}
 
 					_this.$setRemoveState( LocalDb_Package.REMOVE_FAILED );
+				} )
+				.then( function()
+				{
+					_this._uninstallingPromise = null;
 				} );
 		} );
 

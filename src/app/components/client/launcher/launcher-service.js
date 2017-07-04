@@ -86,9 +86,9 @@ angular.module( 'App.Client.Launcher' )
 		// _this.isLoaded = true;
 	};
 
-	this.numGamesRunning = function()
+	this.getRunningPackageIds = function()
 	{
-		return _this.currentlyPlaying.length;
+		return _.pluck( _this.currentlyPlaying, 'id' );
 	};
 
 	this.launch = function( localPackage )
@@ -142,7 +142,10 @@ angular.module( 'App.Client.Launcher' )
 			{
 				console.log( 'Could not reattach launcher instance', localPackage.running_pid );
 				console.error( e );
-				return _this.clear( localPackage );
+				return $rootScope.$apply( function()
+				{
+					return _this.clear( localPackage );
+				} );
 			} );
 	};
 
@@ -152,7 +155,10 @@ angular.module( 'App.Client.Launcher' )
 
 		launchInstance.on( 'gameOver', function()
 		{
-			_this.clear( localPackage );
+			$rootScope.$apply( function()
+			{
+				_this.clear( localPackage );
+			} );
 		} );
 
 		$rootScope.$emit( 'Client_Launcher.gameLaunched', this.currentlyPlaying.length );
