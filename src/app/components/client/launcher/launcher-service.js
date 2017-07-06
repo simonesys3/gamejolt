@@ -46,9 +46,14 @@ angular.module( 'App.Client.Launcher' )
 				{
 					var localPackage = Client_Library.packages[ runningPackageId ];
 					if ( localPackage && !localPackage.isRunning() ) {
-						markedAsRunning.push( localPackage.$setRunningPid( {
-							wrapperId: localPackage.id.toString(),
-						} ) );
+						markedAsRunning.push(
+							localPackage.$setRunningPid( {
+								wrapperId: localPackage.id.toString(),
+							} )
+							.catch( function( err ) {
+								console.warn( 'Could not mark package as running: ' + localPackage.id );
+							} )
+						);
 					}
 				} );
 
@@ -81,7 +86,13 @@ angular.module( 'App.Client.Launcher' )
 			{
 				console.log( 'Launcher loaded and ready' );
 				_this.isLoaded = true;
-			} );
+			} )
+			.catch( function( err )
+			{
+				console.error( 'Failed to initialize everything for launcher' );
+				console.error( err );
+				_this.isLoaded = true;
+			})
 
 		// _this.isLoaded = true;
 	};

@@ -90,7 +90,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 						return runningPackageIds.indexOf( item.id ) !== -1;
 					} );
 
-					console.log( 'Number of running games to migrate: ' + runningPackageIds.length );
+					console.log( 'Number of running games to migrate: ' + ctrl.runningPackages.length );
 					if ( !ctrl.runningPackages.length ) {
 						resolve();
 					}
@@ -170,7 +170,7 @@ angular.module( 'App.Client.Migrate' ).component( 'gjClientMigrate', {
 			var resolve = ctrl.currentPackageResolve;
 			var index = ctrl.currentIndex;
 
-			Client_Installer.uninstall( ctrl.currentPackage )
+			ctrl.currentPackage.$uninstall()
 				.then( function()
 				{
 					return migratePackage( index + 1 )
